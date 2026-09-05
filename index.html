@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Pastelaria El Shaddai</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+
+/* =========================================
+   GERAL
+========================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #fff8e7;
+    color: #292929;
+}
+
+
+/* =========================================
+   CABEÇALHO
+========================================= */
+
+header {
+    background: linear-gradient(
+        135deg,
+        #c62828,
+        #e53935,
+        #ffb300
+    );
+
+    color: white;
+    text-align: center;
+    padding: 28px 12px 25px;
+
+    box-shadow:
+        0 4px 15px rgba(0,0,0,.18);
+}
+
+
+/* =========================================
+   LOGO
+========================================= */
+
+.logo-area {
+    width: 120px;
+    height: 120px;
+
+    margin: 0 auto 12px;
+
+    background: white;
+
+    border: 4px solid #ffcf40;
+
+    border-radius: 50%;
+
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow:
+        0 4px 12px rgba(0,0,0,.18);
+}
+
+.logo-area img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+
+/* =========================================
+   TÍTULO
+========================================= */
+
+header h1 {
+    margin: 5px 0 7px;
+
+    font-size: 30px;
+
+    font-weight: 800;
+
+    text-shadow:
+        1px 2px 3px rgba(0,0,0,.20);
+}
+
+header p {
+    margin: 0;
+
+    font-size: 17px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================
+   CONTAINER
+========================================= */
+
+.container {
+    width: 92%;
+
+    max-width: 1050px;
+
+    margin: 22px auto 40px;
+}
+
+
+/* =========================================
+   PESQUISA
+========================================= */
+
+.area-pesquisa {
+    position: relative;
+
+    width: 100%;
+
+    margin-bottom: 8px;
+}
+
+.pesquisa {
+    width: 100%;
+
+    height: 52px;
+
+    padding: 10px 58px 10px 17px;
+
+    border: 2px solid #ffd166;
+
+    border-radius: 14px;
+
+    font-size: 16px;
+
+    background: white;
+
+    outline: none;
+
+    box-shadow:
+        0 3px 10px rgba(0,0,0,.06);
+}
+
+.pesquisa:focus {
+    border-color: #e53935;
+
+    box-shadow:
+        0 0 0 3px rgba(229,57,53,.10);
+}
+
+
+/* =========================================
+   LUPA
+========================================= */
+
+.botao-pesquisa {
+    position: absolute;
+
+    right: 5px;
+    top: 4px;
+
+    width: 44px;
+    height: 44px;
+
+    border: none;
+
+    border-radius: 11px;
+
+    background: #ffb300;
+
+    color: #c62828;
+
+    font-size: 22px;
+
+    cursor: pointer;
+}
+
+.botao-pesquisa:active {
+    transform: scale(.95);
+}
+
+
+/* =========================================
+   ÁREA DAS CATEGORIAS
+========================================= */
+
+.area-categorias {
+    position: relative;
+
+    width: 100%;
+
+    margin-bottom: 12px;
+
+    overflow: hidden;
+}
+
+
+/* =========================================
+   AVISO DESLIZE
+========================================= */
+
+.aviso-deslize {
+    position: absolute;
+
+    right: 0;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    z-index: 5;
+
+    background: rgba(255,255,255,.96);
+
+    color: #c62828;
+
+    font-size: 9px;
+
+    font-weight: bold;
+
+    padding: 3px 5px;
+
+    border-radius: 8px;
+
+    pointer-events: none;
+
+    box-shadow:
+        0 1px 4px rgba(0,0,0,.08);
+
+    transition: opacity .3s;
+}
+
+
+/* =========================================
+   CATEGORIAS
+========================================= */
+
+.categorias {
+    display: flex;
+
+    gap: 6px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    padding: 2px 28px 5px 0;
+
+    margin: 0;
+
+    scrollbar-width: none;
+
+    -webkit-overflow-scrolling: touch;
+
+    white-space: nowrap;
+}
+
+.categorias::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* BOTÕES DAS CATEGORIAS */
+
+.categorias .botao {
+    flex: 0 0 auto;
+
+    height: 34px;
+
+    background: white;
+
+    color: #c62828;
+
+    border: 1.5px solid #ffb300;
+
+    border-radius: 17px;
+
+    padding: 4px 11px;
+
+    font-size: 11px;
+
+    font-weight: bold;
+
+    white-space: nowrap;
+
+    box-shadow:
+        0 2px 5px rgba(0,0,0,.06);
+
+    cursor: pointer;
+}
+
+.categorias .botao:active {
+    background: #ffb300;
+
+    transform: scale(.97);
+}
+
+
+/* =========================================
+   BOTÕES GERAIS
+========================================= */
+
+.botao {
+    background: #ffb300;
+
+    color: #222;
+
+    border: none;
+
+    border-radius: 11px;
+
+    padding: 12px 18px;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.botao:hover {
+    opacity: .92;
+}
+
+.botao:active {
+    transform: scale(.98);
+}
+
+
+/* =========================================
+   BANNER PRINCIPAL
+========================================= */
+
+.banner-principal {
+    position: relative;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            #c62828,
+            #e53935 50%,
+            #ffb300
+        );
+
+    color: white;
+
+    border-radius: 22px;
+
+    padding: 28px 22px;
+
+    margin: 20px 0;
+
+    box-shadow:
+        0 6px 18px rgba(0,0,0,.15);
+
+    text-align: center;
+}
+
+.banner-principal::after {
+    content: "🥟";
+
+    position: absolute;
+
+    right: 15px;
+    bottom: -15px;
+
+    font-size: 75px;
+
+    opacity: .18;
+
+    transform: rotate(-15deg);
+}
+
+.banner-principal h2 {
+    margin: 0 0 10px;
+
+    font-size: 28px;
+
+    position: relative;
+
+    z-index: 1;
+}
+
+.banner-principal p {
+    margin: 7px 0;
+
+    font-size: 17px;
+
+    position: relative;
+
+    z-index: 1;
+}
+
+.banner-principal strong {
+    font-size: 20px;
+
+    color: #fffde7;
+}
+
+
+/* =========================================
+   PROMOÇÃO
+========================================= */
+
+.banner-promocao {
+    background: white;
+
+    border: 3px solid #ffb300;
+
+    border-radius: 18px;
+
+    padding: 20px;
+
+    margin: 20px 0;
+
+    box-shadow:
+        0 4px 12px rgba(0,0,0,.08);
+
+    text-align: center;
+}
+
+.banner-promocao h2 {
+    color: #c62828;
+
+    margin: 0 0 8px;
+
+    font-size: 22px;
+}
+
+.banner-promocao p {
+    margin: 0;
+
+    font-size: 16px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   AÇÕES
+========================================= */
+
+.acoes {
+    display: flex;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+    margin: 18px 0;
+}
+
+.acoes .botao {
+    flex: 1;
+
+    min-width: 140px;
+}
+
+
+/* =========================================
+   SEÇÕES
+========================================= */
+
+.secao {
+    margin-top: 38px;
+
+    scroll-margin-top: 25px;
+}
+
+.secao h2 {
+    color: #c62828;
+
+    border-bottom: 3px solid #ffb300;
+
+    padding-bottom: 9px;
+
+    margin-bottom: 17px;
+
+    font-size: 25px;
+}
+
+
+/* =========================================
+   PRODUTOS
+========================================= */
+
+.produtos {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(230px, 1fr)
+        );
+
+    gap: 16px;
+}
+
+
+/* =========================================
+   CARD
+========================================= */
+
+.card-produto {
+    background: white;
+
+    border: 2px solid #ffd166;
+
+    border-radius: 18px;
+
+    padding: 17px;
+
+    box-shadow:
+        0 4px 12px rgba(0,0,0,.08);
+
+    transition: .2s;
+}
+
+.card-produto:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 7px 18px rgba(0,0,0,.12);
+}
+
+.card-produto h3 {
+    color: #c62828;
+
+    margin: 0 0 8px;
+
+    font-size: 20px;
+}
+
+.card-produto p {
+    line-height: 1.45;
+}
+
+.card-produto .preco {
+    color: #c62828;
+
+    font-size: 21px;
+
+    font-weight: bold;
+
+    margin: 12px 0;
+}
+
+.card-produto .botao {
+    width: 100%;
+
+    margin-top: 5px;
+}
+
+
+/* =========================================
+   RESPONSIVO
+========================================= */
+
+@media (max-width: 600px) {
+
+    header {
+        padding: 25px 12px 23px;
+    }
+
+    .logo-area {
+        width: 110px;
+        height: 110px;
+
+        margin-bottom: 12px;
+    }
+
+    header h1 {
+        font-size: 26px;
+    }
+
+    header p {
+        font-size: 16px;
+    }
+
+    .container {
+        width: 90%;
+
+        margin-top: 20px;
+    }
+
+    .pesquisa {
+        height: 50px;
+
+        font-size: 16px;
+    }
+
+    .categorias .botao {
+        height: 32px;
+
+        padding: 4px 10px;
+
+        font-size: 11px;
+    }
+
+    .banner-principal {
+        padding: 25px 17px;
+    }
+
+    .banner-principal h2 {
+        font-size: 24px;
+    }
+
+    .produtos {
+        grid-template-columns: 1fr;
+    }
+
+    .acoes {
+        flex-direction: column;
+    }
+
+    .acoes .botao {
+        width: 100%;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================
+     CABEÇALHO
+========================================= -->
+
+<header>
+
+    <div class="logo-area">
+
+        <img
+            src="logo.png"
+            alt="Pastelaria El Shaddai"
+        >
+
+    </div>
+
+    <h1>
+        Pastelaria El Shaddai
+    </h1>
+
+    <p>
+        Feito a dois, no ponto pra você!
+    </p>
+
+</header>
+
+
+<div class="container">
+
+
+<!-- =========================================
+     PESQUISA
+========================================= -->
+
+<div class="area-pesquisa">
+
+    <input
+        type="text"
+        id="pesquisa"
+        class="pesquisa"
+        placeholder="Pesquisar pastel, pizza, bebida, batata..."
+    >
+
+    <button
+        type="button"
+        class="botao-pesquisa"
+        onclick="executarPesquisa()"
+        aria-label="Pesquisar">
+
+        🔍
+
+    </button>
+
+</div>
+
+
+<!-- =========================================
+     CATEGORIAS
+========================================= -->
+
+<div class="area-categorias">
+
+    <div
+        class="categorias"
+        id="categorias">
+
+        <button
+            class="botao"
+            onclick="irParaSecao('pasteis')">
+            Pastéis
+        </button>
+
+        <button
+            class="botao"
+            onclick="irParaSecao('combos')">
+            Combos
+        </button>
+
+        <button
+            class="botao"
+            onclick="irParaSecao('bebidas')">
+            Bebidas
+        </button>
+
+        <button
+            class="botao"
+            onclick="irParaSecao('pizzas')">
+            Pizza
+        </button>
+
+        <button
+            class="botao"
+            onclick="irParaSecao('batatas')">
+            Batata
+        </button>
+
+    </div>
+
+    <div
+        id="avisoDeslize"
+        class="aviso-deslize">
+
+        deslize →
+
+    </div>
+
+</div>
+
+
+<!-- =========================================
+     BANNER
+========================================= -->
+
+<div class="banner-principal">
+
+    <h2>
+        Pastéis feitos na hora!
+    </h2>
+
+    <p>
+        Crocantes, recheados e preparados
+        com carinho.
+    </p>
+
+    <p>
+        <strong>
+            Peça agora!
+        </strong>
+    </p>
+
+</div>
+
+
+<!-- =========================================
+     PROMOÇÃO
+========================================= -->
+
+<div class="banner-promocao">
+
+    <h2>
+        PROMOÇÃO DA SEMANA
+    </h2>
+
+    <p>
+        Na compra de 2 pastéis,
+        ganhe um refrigerante com desconto.
+    </p>
+
+</div>
+
+
+<!-- =========================================
+     AÇÕES
+========================================= -->
+
+<div class="acoes">
+
+    <button
+        class="botao"
+        onclick="verCarrinho()">
+
+        Carrinho
+        (<span id="contador">0</span>)
+
+    </button>
+
+    <button
+        class="botao"
+        onclick="irParaPedido()">
+
+        Fazer pedido
+
+    </button>
+
+</div>
+
+
+<!-- =========================================
+     PASTÉIS
+========================================= -->
+
+<section
+    id="pasteis"
+    class="secao">
+
+    <h2>
+        Pastéis
+    </h2>
+
+    <div class="produtos">
+
+
+        <div class="card-produto">
+
+            <h3>
+                Pastel de Carne
+            </h3>
+
+            <p>
+                Carne temperada e recheio especial.
+            </p>
+
+            <p class="preco">
+                R$ 15,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="personalizarProduto(
+                    'Pastel de Carne',
+                    15,
+                    ['Carne'],
+                    [
+                        {nome:'Queijo',preco:2},
+                        {nome:'Catupiry',preco:2},
+                        {nome:'Bacon',preco:3}
+                    ]
+                )">
+
+                Personalizar
+
+            </button>
+
+        </div>
+
+
+        <div class="card-produto">
+
+            <h3>
+                Pastel de Frango
+            </h3>
+
+            <p>
+                Frango desfiado com catupiry.
+            </p>
+
+            <p class="preco">
+                R$ 16,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="personalizarProduto(
+                    'Pastel de Frango',
+                    16,
+                    ['Frango','Catupiry'],
+                    [
+                        {nome:'Queijo',preco:2},
+                        {nome:'Bacon',preco:3},
+                        {nome:'Milho',preco:1.5}
+                    ]
+                )">
+
+                Personalizar
+
+            </button>
+
+        </div>
+
+
+        <div class="card-produto">
+
+            <h3>
+                Pastel de Pizza
+            </h3>
+
+            <p>
+                Mussarela, presunto e tomate.
+            </p>
+
+            <p class="preco">
+                R$ 17,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="personalizarProduto(
+                    'Pastel de Pizza',
+                    17,
+                    ['Mussarela','Presunto','Tomate'],
+                    [
+                        {nome:'Catupiry',preco:2},
+                        {nome:'Bacon',preco:3},
+                        {nome:'Milho',preco:1.5}
+                    ]
+                )">
+
+                Personalizar
+
+            </button>
+
+        </div>
+
+
+        <div class="card-produto">
+
+            <h3>
+                Pastel de Queijo
+            </h3>
+
+            <p>
+                Mussarela cremosa.
+            </p>
+
+            <p class="preco">
+                R$ 14,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="personalizarProduto(
+                    'Pastel de Queijo',
+                    14,
+                    ['Mussarela'],
+                    [
+                        {nome:'Catupiry',preco:2},
+                        {nome:'Bacon',preco:3},
+                        {nome:'Milho',preco:1.5}
+                    ]
+                )">
+
+                Personalizar
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================
+     COMBOS
+========================================= -->
+
+<section
+    id="combos"
+    class="secao">
+
+    <h2>
+        Combos
+    </h2>
+
+    <div class="produtos">
+
+
+        <div class="card-produto">
+
+            <h3>
+                Combo 1
+            </h3>
+
+            <p>
+                2 pastéis + refrigerante.
+            </p>
+
+            <p class="preco">
+                R$ 30,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="personalizarProduto(
+                    'Combo 1',
+                    30,
+                    [],
+                    [
+                        {nome:'Coca-Cola 1L',preco:4},
+                        {nome:'Coca-Cola 2L',preco:7},
+                        {nome:'Batata pequena',preco:5}
+                    ]
+                )">
+
+                Personalizar
+
+            </button>
+
+        </div>
+
+
+        <div class="card-produto">
+
+            <h3>
+                Combo 2
+            </h3>
+
+            <p>
+                2 pastéis + batata.
+            </p>
+
+            <p class="preco">
+                R$ 35,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="personalizarProduto(
+                    'Combo 2',
+                    35,
+                    [],
+                    [
+                        {nome:'Coca-Cola 1L',preco:4},
+                        {nome:'Coca-Cola 2L',preco:7},
+                        {nome:'Queijo na batata',preco:3}
+                    ]
+                )">
+
+                Personalizar
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================
+     BEBIDAS
+========================================= -->
+
+<section
+    id="bebidas"
+    class="secao">
+
+    <h2>
+        Bebidas
+    </h2>
+
+    <div class="produtos">
+
+
+        <div class="card-produto">
+
+            <h3>
+                Coca-Cola
+            </h3>
+
+            <p>
+                Escolha o tamanho.
+            </p>
+
+            <p class="preco">
+                A partir de R$ 6,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="personalizarProduto(
+                    'Coca-Cola',
+                    0,
+                    [],
+                    [
+                        {nome:'Lata 350ml',preco:6},
+                        {nome:'1 litro',preco:10},
+                        {nome:'2 litros',preco:14}
+                    ]
+                )">
+
+                Escolher tamanho
+
+            </button>
+
+        </div>
+
+
+        <div class="card-produto">
+
+            <h3>
+                Guaraná
+            </h3>
+
+            <p>
+                Escolha o tamanho.
+            </p>
+
+            <p class="preco">
+                A partir de R$ 5,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="personalizarProduto(
+                    'Guaraná',
+                    0,
+                    [],
+                    [
+                        {nome:'Lata 350ml',preco:5},
+                        {nome:'1 litro',preco:9},
+                        {nome:'2 litros',preco:13}
+                    ]
+                )">
+
+                Escolher tamanho
+
+            </button>
+
+        </div>
+
+
+        <div class="card-produto">
+
+            <h3>
+                Água
+            </h3>
+
+            <p>
+                Água mineral.
+            </p>
+
+            <p class="preco">
+                R$ 3,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="adicionarProduto(
+                    'Água',
+                    3
+                )">
+
+                Adicionar
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+<!-- =========================================
+     PIZZAS
+========================================= -->
+
+<section
+    id="pizzas"
+    class="secao">
+
+    <h2>
+        Pizza
+    </h2>
+
+    <div class="produtos">
+
+        <div class="card-produto">
+
+            <h3>
+                Pizza de Mussarela
+            </h3>
+
+            <p>
+                Mussarela e tomate.
+            </p>
+
+            <p class="preco">
+                A partir de R$ 35,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="personalizarPizza(
+                    'Pizza de Mussarela',
+                    35,
+                    [
+                        'Mussarela',
+                        'Tomate'
+                    ]
+                )">
+
+                Personalizar pizza
+
+            </button>
+
+        </div>
+
+
+        <div class="card-produto">
+
+            <h3>
+                Pizza de Calabresa
+            </h3>
+
+            <p>
+                Calabresa, cebola e mussarela.
+            </p>
+
+            <p class="preco">
+                A partir de R$ 38,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="personalizarPizza(
+                    'Pizza de Calabresa',
+                    38,
+                    [
+                        'Calabresa',
+                        'Cebola',
+                        'Mussarela'
+                    ]
+                )">
+
+                Personalizar pizza
+
+            </button>
+
+        </div>
+
+
+        <div class="card-produto">
+
+            <h3>
+                Pizza de Frango
+            </h3>
+
+            <p>
+                Frango, catupiry e mussarela.
+            </p>
+
+            <p class="preco">
+                A partir de R$ 40,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="personalizarPizza(
+                    'Pizza de Frango',
+                    40,
+                    [
+                        'Frango',
+                        'Catupiry',
+                        'Mussarela'
+                    ]
+                )">
+
+                Personalizar pizza
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================
+     BATATAS
+========================================= -->
+
+<section
+    id="batatas"
+    class="secao">
+
+    <h2>
+        Batatas
+    </h2>
+
+    <div class="produtos">
+
+        <div class="card-produto">
+
+            <h3>
+                Batata Frita
+            </h3>
+
+            <p>
+                Batata frita crocante.
+            </p>
+
+            <p class="preco">
+                R$ 12,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="adicionarProduto(
+                    'Batata Frita',
+                    12
+                )">
+
+                Adicionar
+
+            </button>
+
+        </div>
+
+
+        <div class="card-produto">
+
+            <h3>
+                Batata com Queijo
+            </h3>
+
+            <p>
+                Batata frita com queijo.
+            </p>
+
+            <p class="preco">
+                R$ 15,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="adicionarProduto(
+                    'Batata com Queijo',
+                    15
+                )">
+
+                Adicionar
+
+            </button>
+
+        </div>
+
+
+        <div class="card-produto">
+
+            <h3>
+                Batata Especial
+            </h3>
+
+            <p>
+                Batata, queijo e bacon.
+            </p>
+
+            <p class="preco">
+                R$ 18,00
+            </p>
+
+            <button
+                class="botao"
+                onclick="adicionarProduto(
+                    'Batata Especial',
+                    18
+                )">
+
+                Adicionar
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =========================================
+     SCRIPT DO INDEX
+========================================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function() {
+
+    const pesquisa =
+        document.getElementById("pesquisa");
+
+    if (!pesquisa) return;
+
+
+    pesquisa.addEventListener("input", function() {
+
+        const termo =
+            this.value.toLowerCase().trim();
+
+        const secoes =
+            document.querySelectorAll(".secao");
+
+
+        secoes.forEach(function(secao) {
+
+            const cards =
+                secao.querySelectorAll(".card-produto");
+
+            let encontrou = false;
+
+
+            cards.forEach(function(card) {
+
+                const texto =
+                    card.textContent.toLowerCase();
+
+
+                if (
+                    termo === "" ||
+                    texto.includes(termo)
+                ) {
+
+                    card.style.display = "";
+                    encontrou = true;
+
+                } else {
+
+                    card.style.display = "none";
+
+                }
+
+            });
+
+
+            if (termo !== "") {
+
+                secao.style.display =
+                    encontrou ? "" : "none";
+
+            } else {
+
+                secao.style.display = "";
+
+            }
+
+        });
+
+    });
+
+});
+
+
+/* =========================================
+   PESQUISA PELA LUPA
+========================================= */
+
+function executarPesquisa() {
+
+    const pesquisa =
+        document.getElementById("pesquisa");
+
+    if (!pesquisa) return;
+
+
+    const termo =
+        pesquisa.value.toLowerCase().trim();
+
+
+    if (!termo) return;
+
+
+    const secoes =
+        document.querySelectorAll(".secao");
+
+
+    let encontrou = false;
+
+
+    secoes.forEach(function(secao) {
+
+        const cards =
+            secao.querySelectorAll(".card-produto");
+
+
+        let encontrouNaSecao = false;
+
+
+        cards.forEach(function(card) {
+
+            const texto =
+                card.textContent.toLowerCase();
+
+
+            if (texto.includes(termo)) {
+
+                card.style.display = "";
+                encontrouNaSecao = true;
+                encontrou = true;
+
+            } else {
+
+                card.style.display = "none";
+
+            }
+
+        });
+
+
+        if (encontrouNaSecao) {
+
+            secao.style.display = "";
+
+        } else {
+
+            secao.style.display = "none";
+
+        }
+
+    });
+
+
+    /* Vai automaticamente para o primeiro resultado */
+
+    if (encontrou) {
+
+        const primeiroResultado =
+            document.querySelector(
+                ".secao[style*='display:'] .card-produto:not([style*='display: none'])"
+            );
+
+
+        let destino = null;
+
+
+        document.querySelectorAll(".secao").forEach(
+            function(secao) {
+
+                if (!destino &&
+                    secao.style.display !== "none") {
+
+                    destino = secao;
+
+                }
+
+            }
+        );
+
+
+        if (destino) {
+
+            destino.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+        }
+
+    } else {
+
+        alert(
+            "Não encontramos nenhum produto com esse nome."
+        );
+
+    }
+
+}
+
+
+/* =========================================
+   ENTER TAMBÉM FAZ A PESQUISA
+========================================= */
+
+const campoPesquisa =
+    document.getElementById("pesquisa");
+
+
+if (campoPesquisa) {
+
+    campoPesquisa.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Enter") {
+
+                event.preventDefault();
+
+                executarPesquisa();
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   IR PARA CATEGORIA
+========================================= */
+
+function irParaSecao(id) {
+
+    const secao =
+        document.getElementById(id);
+
+    if (!secao) return;
+
+
+    const pesquisa =
+        document.getElementById("pesquisa");
+
+
+    if (pesquisa) {
+
+        pesquisa.value = "";
+
+    }
+
+
+    /* Mostra todas as seções */
+
+    document.querySelectorAll(".secao").forEach(
+        function(secaoAtual) {
+
+            secaoAtual.style.display = "";
+
+            secaoAtual
+                .querySelectorAll(".card-produto")
+                .forEach(function(card) {
+
+                    card.style.display = "";
+
+                });
+
+        }
+    );
+
+
+    /* Vai para a categoria */
+
+    secao.scrollIntoView({
+
+        behavior: "smooth",
+
+        block: "start"
+
+    });
+
+}
+
+
+/* =========================================
+   AVISO "DESLIZE →"
+========================================= */
+
+const categorias =
+    document.getElementById("categorias");
+
+const avisoDeslize =
+    document.getElementById("avisoDeslize");
+
+
+if (categorias) {
+
+    categorias.addEventListener(
+        "scroll",
+        function() {
+
+            if (categorias.scrollLeft > 5) {
+
+                if (avisoDeslize) {
+
+                    avisoDeslize.style.opacity = "0";
+
+                }
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   CARRINHO
+========================================= */
+
+function atualizarContador() {
+
+    const contador =
+        document.getElementById("contador");
+
+    if (!contador) return;
+
+
+    try {
+
+        const carrinho =
+            JSON.parse(
+                localStorage.getItem("carrinho")
+            ) || [];
+
+
+        let quantidade = 0;
+
+
+        carrinho.forEach(function(item) {
+
+            quantidade +=
+                Number(item.quantidade || 1);
+
+        });
+
+
+        contador.textContent =
+            quantidade;
+
+
+    } catch (erro) {
+
+        contador.textContent = "0";
+
+    }
+
+}
+
+
+atualizarContador();
+
+
+</script>
+
+<!-- SUPABASE: biblioteca e conexão com o banco -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+
+</body>
+
+</html>

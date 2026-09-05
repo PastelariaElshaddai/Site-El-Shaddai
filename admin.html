@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>El Shaddai • Administração</title>
+<style>
+:root{--red:#c62828;--red2:#e53935;--orange:#ffb300;--bg:#fff8e7;--card:#fff;--text:#222;--muted:#777;--border:#eadcae}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}.layout{display:flex;min-height:100vh}.side{position:fixed;left:0;top:0;bottom:0;width:235px;background:#fff;border-right:1px solid #eee;padding:18px 12px;overflow:auto}
+.brand{text-align:center;padding:8px 5px 18px;border-bottom:1px solid #eee;margin-bottom:12px}.brand b{display:block;color:var(--red);font-size:23px;margin-top:5px}.brand small{color:var(--muted)}
+.nav{display:grid;gap:6px}.nav button{border:0;background:transparent;text-align:left;padding:12px;border-radius:11px;cursor:pointer}.nav button.active,.nav button:hover{background:#fff0cf;color:var(--red);font-weight:700}
+.main{margin-left:235px;padding:22px;width:calc(100% - 235px);max-width:1250px}.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:20px}.top h1{margin:0;color:var(--red);font-size:27px}.top p{margin:4px 0;color:var(--muted)}
+.status{background:#eaf8ee;color:#217a37;padding:8px 12px;border-radius:20px;font-weight:700;font-size:13px}
+.screen{display:none}.screen.active{display:block}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:15px}.toolbar h2{margin:0;color:var(--red)}
+.btn{border:0;border-radius:11px;padding:10px 15px;cursor:pointer;font-weight:700}.primary{background:var(--orange)}.light{background:#f1f1f1}.danger{background:#ffe8e8;color:#b00020}
+.card{background:#fff;border:1px solid #eee;border-radius:17px;padding:17px;box-shadow:0 4px 12px #0000000a;margin-bottom:15px}
+.form{display:none}.form.open{display:block}.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}.full{grid-column:1/-1}.field label.title{display:block;font-weight:700;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;background:#fff}.field textarea{min-height:85px;resize:vertical}
+.help{font-size:12px;color:var(--muted);margin-top:5px}.checks{display:flex;gap:8px;flex-wrap:wrap}.check{background:#fff8e7;border-radius:10px;padding:8px 10px;border:1px solid #f0dfac}
+.inline{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.inline>div{flex:1;min-width:140px}.inline .small{flex:0 0 125px}.list{display:grid;gap:11px}.product{display:grid;grid-template-columns:78px 1fr auto;gap:14px;align-items:center;background:#fff;border:1px solid #eee;border-radius:16px;padding:13px}.product img{width:78px;height:78px;object-fit:cover;border-radius:12px;background:#eee}.product h3{margin:0 0 5px;color:var(--red)}.product p{margin:4px 0;color:var(--muted)}.price{font-weight:700;color:var(--red)!important}.actions{display:flex;gap:7px;flex-wrap:wrap}.badge{display:inline-block;padding:4px 8px;border-radius:9px;font-size:11px;font-weight:700}.on{background:#e9f8ed;color:#237b39}.off{background:#eee;color:#666}.empty{text-align:center;padding:28px;color:var(--muted);background:#fff;border:1px dashed #ddd;border-radius:15px}.preview{max-width:180px;max-height:140px;border-radius:12px;margin-top:8px;display:none}.ingredient-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px}.ingredient-row input{padding:10px;border:1px solid #ddd;border-radius:10px;width:100%}.add-row{display:flex;gap:8px;flex-wrap:wrap}.add-row input{padding:10px;border:1px solid #ddd;border-radius:10px}.add-row input:first-child{flex:1;min-width:160px}.add-row input:nth-child(2){width:120px}
+@media(max-width:800px){.side{width:68px;padding:12px 7px}.brand b,.brand small,.nav span{display:none}.brand{border:0}.main{margin-left:68px;width:calc(100% - 68px);padding:14px}.fields{grid-template-columns:1fr}.full{grid-column:auto}.product{grid-template-columns:58px 1fr}.product img{width:58px;height:58px}.product .actions{grid-column:1/-1}.top{align-items:flex-start}.status{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="side">
+  <div class="brand"><div style="font-size:34px">🥟</div><b>El Shaddai</b><small>Administração</small></div>
+  <nav class="nav">
+    <button class="active" data-screen="inicio">🏠 <span>Início</span></button>
+    <button data-screen="produtos">🍴 <span>Produtos</span></button>
+    <button data-screen="categorias">📂 <span>Categorias</span></button>
+  </nav>
+</aside>
+<main class="main">
+<header class="top"><div><h1 id="tituloTela">Produtos</h1><p>Pastelaria El Shaddai</p></div><div class="status" id="status">● Conectando...</div></header>
+
+<section id="inicio" class="screen">
+  <div class="card"><h2>Vamos cadastrar seus produtos</h2><p>Este bloco já deixa o cadastro preparado para nome, preço, categoria, foto, descrição, disponibilidade, ingredientes e adicionais.</p><button class="btn primary" onclick="abrirTela('produtos');novoProduto()">🍴 Cadastrar produto</button></div>
+</section>
+
+<section id="produtos" class="screen active">
+  <div class="toolbar"><div><h2>Produtos</h2><p style="color:var(--muted)">Cadastre e edite o que aparece no cardápio.</p></div><button class="btn primary" onclick="novoProduto()">+ Novo produto</button></div>
+
+  <div id="formProduto" class="card form">
+    <h2 id="formTitulo" style="color:var(--red)">Novo produto</h2>
+    <input type="hidden" id="produtoId">
+    <div class="fields">
+      <div class="field"><label class="title">Nome do produto *</label><input id="nomeProduto" placeholder="Ex.: Pastel de Carne"></div>
+      <div class="field"><label class="title">Preço *</label><input id="precoProduto" type="number" min="0" step="0.01" placeholder="8,00"></div>
+      <div class="field"><label class="title">Categoria *</label><select id="categoriaProduto"></select></div>
+      <div class="field"><label class="title">Descrição</label><textarea id="descricaoProduto" placeholder="Ex.: Carne temperada, queijo e azeitona."></textarea></div>
+
+      <div class="field"><label class="title">Status</label>
+        <label class="check"><input id="produtoAtivo" type="checkbox" checked> Ativo no cardápio</label>
+        <label class="check"><input id="produtoDisponivel" type="checkbox" checked> Disponível para pedido</label>
+      </div>
+
+      <div class="field"><label class="title">Foto</label><input id="fotoProduto" type="file" accept="image/*"><img id="previewFoto" class="preview"><div class="help">A imagem será salva no cadastro. Nesta primeira etapa usamos o campo de foto já existente; depois podemos migrar para o Storage do Supabase.</div></div>
+
+      <div class="field full">
+        <label class="title">Ingredientes</label>
+        <div id="ingredientesLista"></div>
+        <div class="add-row"><input id="novoIngrediente" placeholder="Ex.: Carne"><button class="btn light" type="button" onclick="adicionarIngrediente()">+ Adicionar</button></div>
+        <div class="help">Você poderá marcar quais ingredientes o cliente pode retirar.</div>
+      </div>
+
+      <div class="field full">
+        <label class="title">Adicionais</label>
+        <div id="adicionaisLista" class="checks"></div>
+        <div class="add-row" style="margin-top:9px"><input id="novoAdicionalNome" placeholder="Ex.: Queijo"><input id="novoAdicionalPreco" type="number" min="0" step="0.01" placeholder="Preço"><button class="btn light" type="button" onclick="criarAdicional()">+ Adicionar adicional</button></div>
+        <div class="help">Marque os adicionais que este produto oferece. O preço entra no pedido quando o cliente escolher.</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:17px;flex-wrap:wrap"><button class="btn primary" onclick="salvarProduto()">💾 Salvar produto</button><button class="btn light" onclick="cancelarProduto()">Cancelar</button></div>
+  </div>
+
+  <div id="listaProdutos" class="list"></div>
+</section>
+
+<section id="categorias" class="screen">
+  <div class="toolbar"><div><h2>Categorias</h2><p style="color:var(--muted)">As categorias já existentes continuam no Supabase.</p></div></div>
+  <div class="card"><div id="listaCategorias" class="list"></div></div>
+</section>
+</main></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
