@@ -1,0 +1,5 @@
+BLOCO 9 — FIDELIDADE DOS CLIENTES
+
+Usa a tabela existente public.clientes. Não precisa de SQL novo.
+
+Inclui regra de compras, benefício, ranking, pesquisa e progresso. A aplicação automática do benefício no checkout/WhatsApp ficará para a integração final.

@@ -32,6 +32,8 @@ function abrirTela(id){
   document.getElementById("tituloTela").textContent=id==="produtos"?"Produtos":id==="categorias"?"Categorias":"Início";
   if(id==="produtos") renderProdutos();
   if(id==="categorias") renderCategorias();
+
+if(id==="fidelidade"){const t=document.getElementById("tituloTela");if(t)t.textContent="Fidelidade";carregarFidelidade();}
 }
 
 async function carregarTudo(){
@@ -464,60 +466,11 @@ function moeda(v){return Number(v||0).toLocaleString("pt-BR",{style:"currency",c
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function escAttr(v){return esc(v)}
 
-
-/* =========================================================
-   BLOCO 8 — PROMOÇÕES E CUPONS
-   ========================================================= */
-async function carregarPromocoes(){
-  const box=document.getElementById("listaPromocoes");
-  if(!box)return;
-  try{
-    const r=await supabaseClient.from("promocoes").select("*").order("id",{ascending:false});
-    if(r.error){
-      // A tabela será criada no SQL do Bloco 8 caso ainda não exista.
-      throw r.error;
-    }
-    const dados=r.data||[];
-    box.innerHTML=dados.length?dados.map(p=>`
-      <div class="promo-item">
-        <div class="promo-item-info">
-          <strong>🎟️ ${escAttr(p.codigo||"SEM CÓDIGO")} — ${Number(p.desconto||0)}%</strong>
-          <small>${escAttr(p.descricao||"Sem descrição")} • ${p.ativo?"Ativo":"Inativo"}${p.validade?" • Até "+new Date(p.validade+"T00:00:00").toLocaleDateString("pt-BR"):""}</small>
-        </div>
-        <button type="button" onclick="excluirPromocao(${Number(p.id)})">🗑️ Excluir</button>
-      </div>`).join(""):'<p class="dashboard-vazio">Nenhum cupom cadastrado.</p>';
-  }catch(e){
-    console.error("Erro nas promoções:",e);
-    box.innerHTML='<p class="dashboard-vazio">A tabela de promoções ainda precisa ser criada no Supabase.</p>';
-  }
-}
-
-async function salvarPromocao(){
-  const codigo=(document.getElementById("promoCodigo")?.value||"").trim().toUpperCase();
-  const desconto=Number(document.getElementById("promoDesconto")?.value||0);
-  const descricao=(document.getElementById("promoDescricao")?.value||"").trim();
-  const validade=document.getElementById("promoValidade")?.value||null;
-  const ativo=!!document.getElementById("promoAtivo")?.checked;
-
-  if(!codigo){alert("Digite o código do cupom.");return;}
-  if(!(desconto>0&&desconto<=100)){alert("Informe um desconto entre 0,01% e 100%.");return;}
-
-  try{
-    const r=await supabaseClient.from("promocoes").insert({codigo,desconto,descricao,validade,ativo});
-    if(r.error)throw r.error;
-    alert("Cupom salvo com sucesso! ✅");
-    ["promoCodigo","promoDesconto","promoDescricao","promoValidade"].forEach(id=>{const e=document.getElementById(id);if(e)e.value=""});
-    const a=document.getElementById("promoAtivo");if(a)a.checked=true;
-    carregarPromocoes();
-  }catch(e){
-    console.error(e);
-    alert("Não foi possível salvar. Confira se a tabela promocoes foi criada no Supabase.");
-  }
-}
-
-async function excluirPromocao(id){
-  if(!confirm("Excluir este cupom?"))return;
-  const r=await supabaseClient.from("promocoes").delete().eq("id",id);
-  if(r.error){alert("Não foi possível excluir o cupom.");return;}
-  carregarPromocoes();
-}
+/* BLOCO 9 — FIDELIDADE */
+let listaFidelidadeAtual=[];const CHAVE_FIDELIDADE_META="elshaddai_fidelidade_meta",CHAVE_FIDELIDADE_BENEFICIO="elshaddai_fidelidade_beneficio";
+function obterRegraFidelidade(){const meta=Math.max(1,Number(localStorage.getItem(CHAVE_FIDELIDADE_META)||10)),beneficio=localStorage.getItem(CHAVE_FIDELIDADE_BENEFICIO)||"1 pastel grátis";const a=document.getElementById("fidelidadeMeta"),b=document.getElementById("fidelidadeBeneficio");if(a)a.value=meta;if(b)b.value=beneficio;return{meta,beneficio}}
+async function carregarFidelidade(){const box=document.getElementById("listaFidelidade");if(box)box.innerHTML='<div class="empty">Carregando fidelidade...</div>';const r=obterRegraFidelidade();try{const{data,error}=await supabaseClient.from("clientes").select("id,nome,telefone,endereco,quantidade_pedidos,total_gasto").order("quantidade_pedidos",{ascending:false});if(error)throw error;listaFidelidadeAtual=Array.isArray(data)?data:[];atualizarResumoFidelidade(r.meta);renderFidelidade(listaFidelidadeAtual,r.meta,r.beneficio)}catch(e){console.error(e);if(box)box.innerHTML='<div class="empty">Não foi possível carregar a fidelidade.</div>'}}
+function atualizarResumoFidelidade(meta){const compras=listaFidelidadeAtual.reduce((s,c)=>s+Number(c.quantidade_pedidos||0),0),leais=listaFidelidadeAtual.filter(c=>Number(c.quantidade_pedidos||0)>=meta).length,benef=listaFidelidadeAtual.reduce((s,c)=>s+Math.floor(Number(c.quantidade_pedidos||0)/meta),0);document.getElementById("fidelidadeClientes")&&(document.getElementById("fidelidadeClientes").textContent=listaFidelidadeAtual.length);document.getElementById("fidelidadeLeais")&&(document.getElementById("fidelidadeLeais").textContent=leais);document.getElementById("fidelidadeCompras")&&(document.getElementById("fidelidadeCompras").textContent=compras);document.getElementById("fidelidadeBeneficios")&&(document.getElementById("fidelidadeBeneficios").textContent=benef)}
+function renderFidelidade(lista,meta,beneficio){const box=document.getElementById("listaFidelidade");if(!box)return;if(!lista.length){box.innerHTML='<div class="empty">Ainda não há clientes registrados.</div>';return}box.innerHTML=lista.map((c,i)=>{const compras=Number(c.quantidade_pedidos||0),total=Number(c.total_gasto||0),ganhos=Math.floor(compras/meta),prog=compras%meta,rest=Math.max(0,meta-prog),pct=Math.min(100,Math.round(prog/meta*100)),pronto=compras>=meta;return `<article class="card" style="margin-top:10px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><strong>${i+1}º ${esc(c.nome||"Cliente")}</strong><div style="color:var(--muted)">${esc(c.telefone||"Telefone não informado")}</div></div><div><strong>${compras}</strong> compras<div style="color:var(--muted)">Total: ${moeda(total)}</div></div></div><div style="margin-top:12px"><div style="height:9px;background:#eee;border-radius:99px;overflow:hidden"><div style="width:${pronto?100:pct}%;height:100%;background:#d62828"></div></div><div style="margin-top:7px;font-size:13px">${pronto?`🎉 Benefício disponível: <strong>${esc(beneficio)}</strong> (${ganhos} benefício(s) conquistado(s))`:`Faltam <strong>${rest}</strong> compra(s) para conquistar <strong>${esc(beneficio)}</strong>.`}</div></div></article>`}).join("")}
+function filtrarFidelidade(){const q=(document.getElementById("pesquisaFidelidade")?.value||"").toLowerCase(),r=obterRegraFidelidade();renderFidelidade(listaFidelidadeAtual.filter(c=>String(c.nome||"").toLowerCase().includes(q)||String(c.telefone||"").toLowerCase().includes(q)||String(c.endereco||"").toLowerCase().includes(q)),r.meta,r.beneficio)}
+function salvarConfiguracaoFidelidade(){const meta=Math.max(1,parseInt(document.getElementById("fidelidadeMeta")?.value||10,10)),beneficio=(document.getElementById("fidelidadeBeneficio")?.value||"1 pastel grátis").trim()||"1 pastel grátis";localStorage.setItem(CHAVE_FIDELIDADE_META,meta);localStorage.setItem(CHAVE_FIDELIDADE_BENEFICIO,beneficio);const s=document.getElementById("fidelidadeRegraStatus");if(s)s.textContent=`Regra salva: a cada ${meta} compra(s), o cliente conquista ${beneficio}.`;atualizarResumoFidelidade(meta);renderFidelidade(listaFidelidadeAtual,meta,beneficio)}
