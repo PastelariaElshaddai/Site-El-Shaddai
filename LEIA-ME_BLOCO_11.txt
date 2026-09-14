@@ -1,0 +1,29 @@
+BLOCO 11 — CONSOLIDAÇÃO E INTEGRAÇÃO FINAL
+Pastelaria El Shaddai
+
+Este pacote corrige a integração que estava faltando entre o administrativo, o Supabase e o cardápio do cliente.
+
+Arquivos incluídos:
+- admin.html — painel completo com Produtos, Categorias, Configuração da Loja, Pedidos, Clientes, Dashboard, Promoções e Cupons, Fidelidade e Integração do WhatsApp.
+- admin.js — lógica completa do painel e gravação no Supabase.
+- index.html — cardápio do cliente com os scripts de integração carregados corretamente.
+- script.js — carrinho e personalização.
+- supabase.js — conexão central com o Supabase.
+- catalogo.js — sincronização do cardápio com configuracoes_loja, categorias e produtos.
+
+IMPORTANTE
+1. Substitua no GitHub os seis arquivos deste pacote pelos arquivos atuais do repositório: admin.html, admin.js, index.html, script.js, supabase.js e catalogo.js.
+2. Não altere o pedido.html nesta etapa.
+3. Não rode SQL novo para esta integração; ela usa as tabelas já existentes.
+4. O painel agora salva a configuração da loja no Supabase, e o cardápio lê essa configuração diretamente do Supabase.
+5. Logo e banner podem ser salvos como URL ou como imagem pequena (até 1,8 MB).
+6. O WhatsApp é salvo na configuração central da loja, não apenas no armazenamento local do navegador.
+
+SEQUÊNCIA DE TESTE
+- Abra o Administrativo.
+- Em Configuração da Loja, altere o nome ou slogan e salve.
+- Cadastre/edite um produto e salve.
+- Abra o cardápio do cliente em outra aba ou navegador e atualize a página.
+- Confirme nome, slogan, produtos e categorias.
+- Depois teste logo e banner.
+- Por fim teste o WhatsApp e os pedidos.
