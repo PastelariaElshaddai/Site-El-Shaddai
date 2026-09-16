@@ -1333,3 +1333,95 @@ function irParaSecao(id) {
     });
 
     }
+
+
+// ======================================================
+// BLOCO TAMANHOS — integração com produtos do Supabase
+// ======================================================
+async function adicionarProduto(nome, preco) {
+    try {
+        if (typeof supabaseClient !== 'undefined') {
+            const {data, error} = await supabaseClient
+                .from('produtos')
+                .select('nome,preco,tamanhos')
+                .eq('nome', nome)
+                .eq('ativo', true)
+                .limit(1)
+                .maybeSingle();
+
+            if (!error && data && Array.isArray(data.tamanhos) && data.tamanhos.length) {
+                personalizarBebida(data.nome || nome, data.tamanhos);
+                return;
+            }
+        }
+    } catch (e) {
+        console.warn('Consulta de tamanhos indisponível:', e);
+    }
+
+    const existente = carrinho.find(function(item) {
+        return item.nome === nome && Number(item.preco) === Number(preco) && (!item.detalhes || item.detalhes.length === 0);
+    });
+
+    if (existente) {
+        existente.quantidade = Number(existente.quantidade || 1) + 1;
+    } else {
+        carrinho.push({nome:nome, preco:Number(preco), quantidade:1, detalhes:[]});
+    }
+    salvarCarrinho();
+    alert('Produto adicionado ao carrinho!');
+}
+
+function personalizarBebida(nome, tamanhos) {
+    const antigo = document.getElementById('personalizarModal');
+    if (antigo) antigo.remove();
+
+    const lista = Array.isArray(tamanhos) ? tamanhos : [];
+    if (!lista.length) return;
+
+    const fundo = document.createElement('div');
+    fundo.id = 'personalizarModal';
+    fundo.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px;';
+
+    const caixa = document.createElement('div');
+    caixa.style.cssText = 'width:100%;max-width:520px;max-height:92vh;overflow:auto;background:#fff8e7;border:4px solid #ffb300;border-radius:22px;padding:20px;box-sizing:border-box;';
+
+    let html = `<h2 style="color:#c62828;text-align:center;margin-top:0">Escolha o tamanho</h2>`;
+    html += `<p style="text-align:center;margin-top:-5px;margin-bottom:18px"><strong>${String(nome).replace(/</g,'&lt;').replace(/>/g,'&gt;')}</strong></p>`;
+
+    lista.forEach(function(tamanho, index) {
+        html += `
+            <label style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:white;border:2px solid #ffd166;border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer">
+                <span style="font-size:18px"><strong>${String(tamanho.nome).replace(/</g,'&lt;').replace(/>/g,'&gt;')}</strong>
+                    <strong style="color:#c62828;margin-left:6px">R$ ${Number(tamanho.preco || 0).toFixed(2).replace('.',',')}</strong>
+                </span>
+                <input type="radio" name="tamanhoProduto" value="${index}" ${index === 0 ? 'checked' : ''} style="width:22px;height:22px">
+            </label>`;
+    });
+
+    html += `
+        <button id="btnConfirmarTamanho" style="width:100%;padding:16px;background:#ffb300;border:0;border-radius:12px;font-size:19px;font-weight:bold">Adicionar ao carrinho</button>
+        <button id="btnFecharTamanho" style="width:100%;padding:14px;margin-top:10px;background:white;border:2px solid #c62828;border-radius:12px;color:#c62828;font-size:18px;font-weight:bold">Fechar</button>`;
+
+    caixa.innerHTML = html;
+    fundo.appendChild(caixa);
+    document.body.appendChild(fundo);
+
+    document.getElementById('btnConfirmarTamanho').onclick = function() {
+        const escolhido = caixa.querySelector('input[name="tamanhoProduto"]:checked');
+        if (!escolhido) return alert('Escolha um tamanho.');
+        const tamanho = lista[Number(escolhido.value)];
+        if (!tamanho) return;
+
+        carrinho.push({
+            nome: nome,
+            preco: Number(tamanho.preco || 0),
+            quantidade: 1,
+            detalhes: ['Tamanho: ' + tamanho.nome]
+        });
+        salvarCarrinho();
+        fundo.remove();
+        alert('Produto adicionado ao carrinho!');
+    };
+
+    document.getElementById('btnFecharTamanho').onclick = function() { fundo.remove(); };
+}
