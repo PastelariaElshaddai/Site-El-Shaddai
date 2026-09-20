@@ -1,0 +1,22 @@
+CORREÇÃO — TAMANHO → PERSONALIZAÇÃO
+
+Problema identificado:
+A função escolherTamanhoProduto estava fora do escopo onde esc() e moeda() foram declaradas. Ao clicar no produto com tamanho, o navegador podia parar a função com erro antes de abrir o modal.
+
+Correção aplicada:
+- catalogo.js agora usa escLocal() e moedaLocal() dentro da função de tamanho.
+- O tamanho escolhido continua encaminhando para personalizarProduto().
+- Não houve alteração no Supabase.
+- Não substitua outros arquivos.
+
+INSTALAÇÃO:
+1. Baixe este ZIP.
+2. Substitua somente o catalogo.js no repositório Site-El-Shaddai.
+3. Faça commit/push.
+4. Abra o cardápio do cliente e atualize a página.
+5. Teste o MESMO produto que foi editado no Admin.
+6. Clique em Personalizar.
+7. Escolha um tamanho.
+8. Deve abrir a tela de personalização, com ingredientes/adicionais do produto.
+
+Se ainda não abrir, não faça novas alterações no Supabase. O próximo passo é capturar o erro do navegador para corrigirmos exatamente a função que está interrompendo o fluxo.
