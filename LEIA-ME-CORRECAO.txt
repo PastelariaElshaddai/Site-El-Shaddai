@@ -1,0 +1,12 @@
+CORREÇÃO — PERSONALIZAÇÃO DE PRODUTOS EDITADOS
+
+Arquivo: catalogo.js
+
+O fluxo de produtos vindos do Supabase foi corrigido para que produtos com tamanhos não sejam adicionados diretamente ao carrinho antes da personalização.
+
+Agora:
+Produto → escolher tamanho → abrir personalização → ingredientes/adicionais → carrinho.
+
+Nenhuma tabela ou estrutura do Supabase foi alterada.
+
+Substitua apenas o catalogo.js no repositório Site-El-Shaddai.
