@@ -1,0 +1,17 @@
+PASTELARIA EL SHADDAI — CORREÇÃO FINAL DE LAYOUT + TAMANHOS
+
+Substituir no GitHub os arquivos:
+- admin.html
+- admin.js
+- catalogo.js
+
+Não apagar o restante do repositório.
+Não executar SQL e não alterar o Supabase.
+
+Correções:
+- ADM responsivo para celular/touch;
+- nomes de ingredientes/adicionais/tamanhos não ficam em colunas estreitas;
+- produto com tamanhos salva preco=0 internamente e não exibe R$ 0,00;
+- preço base fica desativado quando há tamanhos;
+- cliente mostra os preços dos tamanhos;
+- seleção de tamanho continua para a tela de personalização, onde ingredientes e adicionais aparecem.
