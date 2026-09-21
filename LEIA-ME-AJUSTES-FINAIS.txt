@@ -1,0 +1,10 @@
+PASTELARIA EL SHADDAI — AJUSTES FINAIS DO ADMIN
+
+Substituir no GitHub: admin.html, admin.js e catalogo.js.
+Não apagar outros arquivos, não criar outro Supabase e não executar SQL novo.
+
+Categorias: Nova categoria; editar nome/descrição/status; renomear categoria atualiza os produtos ligados; Abrir produtos funciona como uma pasta para filtrar e editar produtos.
+Promoções: porcentagem, valor bruto, quantidade de compras, prêmio por produto/combo/categoria/desconto/outro, edição e exclusão. Usa apenas a tabela promocoes existente; a configuração avançada é registrada no campo descricao sem criar coluna nova.
+Fidelidade: mostra quais clientes atingiram a meta, selo Cliente fiel, compras, valor gasto, benefícios e progresso, com filtro por fiéis/em progresso.
+
+A aplicação completa dessas novas modalidades de promoção no checkout será integrada na próxima etapa.
