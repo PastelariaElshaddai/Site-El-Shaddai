@@ -1,12 +1,29 @@
-CORREÇÃO — PERSONALIZAÇÃO DE PRODUTOS EDITADOS
+PASTELARIA EL SHADDAI — CORREÇÃO DO BOTÃO PERSONALIZAR
 
-Arquivo: catalogo.js
+Problema corrigido:
+Produtos criados pelo ADM e carregados do Supabase podiam aparecer no cardápio, mas o botão Personalizar não abria a personalização.
 
-O fluxo de produtos vindos do Supabase foi corrigido para que produtos com tamanhos não sejam adicionados diretamente ao carrinho antes da personalização.
+Correção:
+- catalogo.js agora garante uma função de personalização para os produtos vindos do Supabase.
+- Ingredientes aparecem para marcar/desmarcar.
+- Adicionais aparecem com seus preços.
+- O total é recalculado ao escolher adicionais.
+- O item é salvo no carrinho usando a mesma chave localStorage "carrinho".
+- Produtos com tamanhos continuam abrindo primeiro a escolha do tamanho e depois a personalização.
+- Produtos com tamanhos não exibem R$ 0,00.
 
-Agora:
-Produto → escolher tamanho → abrir personalização → ingredientes/adicionais → carrinho.
+SUBSTITUIR NO GITHUB:
+- somente catalogo.js
 
-Nenhuma tabela ou estrutura do Supabase foi alterada.
+NÃO apagar outros arquivos.
+NÃO mexer no Supabase.
+NÃO executar SQL.
 
-Substitua apenas o catalogo.js no repositório Site-El-Shaddai.
+Depois de substituir:
+1. Aguarde o GitHub Pages publicar.
+2. Abra o site.
+3. Teste um produto NOVO criado pelo ADM.
+4. Clique em Personalizar.
+5. Verifique ingredientes/adicionais e tente adicionar ao carrinho.
+
+Se funcionar, seguimos para o teste do carrinho/checkout.
