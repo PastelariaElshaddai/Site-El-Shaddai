@@ -1,8 +1,26 @@
-BLOCO NOVO — TAMANHOS DOS PRODUTOS
+PASTELARIA EL SHADDAI — CONSOLIDAÇÃO FINAL
 
-1. Execute BLOCO_TAMANHOS_SQL.sql no SQL Editor do Supabase.
-2. Substitua admin.html e admin.js no GitHub.
-3. Substitua script.js pela versão deste bloco.
-4. Faça o teste com um produto que tenha tamanhos, por exemplo Pequeno/Médio/Grande, cada um com seu preço.
+Esta versão consolida as correções de produtos, tamanhos, ingredientes e adicionais.
 
-O tamanho escolhido é salvo no carrinho como detalhe e o preço escolhido é usado no total.
+ARQUIVOS:
+- index.html — cliente
+- catalogo.js — sincronização do catálogo, tamanhos e personalização
+- admin.html — painel ADM e correção visual dos campos
+- admin.js — produtos, tamanhos, ingredientes e adicionais
+
+CORREÇÕES:
+1. Produto com tamanhos não mostra R$ 0,00 no cliente.
+2. Produto com tamanhos salva preco=0 internamente porque a coluna preco do Supabase é NOT NULL.
+3. Produto com tamanhos mostra os preços somente nos tamanhos.
+4. Depois de escolher o tamanho, o cliente segue para a personalização.
+5. Ingredientes e adicionais do produto passam para a personalização, inclusive em produtos com tamanhos.
+6. Nomes longos de ingredientes/adicionais quebram dentro dos quadrados, no ADM e na personalização do cliente.
+7. Ao editar produto com tamanhos, o preço base fica vazio e desativado.
+8. A lista de produtos do ADM não mostra R$ 0,00 para produtos que possuem tamanhos.
+9. Cache dos arquivos foi atualizado para a versão 20260921-consolidado.
+
+IMPORTANTE:
+- NÃO apague o projeto Supabase.
+- NÃO execute SQL novamente.
+- NÃO substitua supabase.js por outro arquivo.
+- Substitua somente os quatro arquivos deste pacote no repositório Site-El-Shaddai.
