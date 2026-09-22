@@ -86,6 +86,48 @@
     }
   }
 
+  function renderPromocoes(promocoes) {
+    var container = document.querySelector(".container");
+    if (!container) return;
+    var antigo = document.getElementById("promocoesCliente");
+    if (antigo) antigo.remove();
+    var hoje = new Date(); hoje.setHours(0,0,0,0);
+    var ativas = (promocoes || []).filter(function(p) {
+      if (!p || p.ativo === false) return false;
+      if (!p.validade) return true;
+      var partes = String(p.validade).split("-");
+      if (partes.length !== 3) return true;
+      var validade = new Date(Number(partes[0]), Number(partes[1])-1, Number(partes[2]));
+      validade.setHours(0,0,0,0);
+      return validade >= hoje;
+    });
+    if (!ativas.length) return;
+    function metaPromo(p) {
+      try { var raw=String(p.descricao||""), marker="__ELSHADAI_PROMO_V2__"; if(raw.indexOf(marker)===0)return JSON.parse(raw.slice(marker.length)); } catch(e) {}
+      return {tipo:"percentual",descricao:String(p.descricao||"")};
+    }
+    function moedaPromo(v){return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});}
+    var box=document.createElement("section"); box.id="promocoesCliente"; box.className="banner-promocao"; box.style.cssText += ";text-align:left;";
+    var html="<h2 style='text-align:center'>🎁 OFERTAS E CUPONS</h2>";
+    html+="<p style='text-align:center;margin-bottom:15px'>Aproveite as promoções ativas da Pastelaria El Shaddai!</p>";
+    ativas.forEach(function(p){
+      var m=metaPromo(p), detalhe="";
+      if(m.tipo==="percentual") detalhe=Number(p.desconto||0)+"% de desconto";
+      else if(m.tipo==="valor") detalhe=moedaPromo(p.desconto)+" de desconto";
+      else detalhe="A cada "+Number(m.quantidade||0)+" compra(s): "+String(m.premioNome||"benefício");
+      var validade=p.validade?"Válido até "+String(p.validade).split("-").reverse().join("/"):"Sem data de validade";
+      var descricao=m.descricao||"";
+      html+="<div style='background:#fff8e7;border:2px dashed #ffb300;border-radius:14px;padding:13px;margin-top:10px'>";
+      html+="<div style='font-size:18px;font-weight:800;color:#c62828'>"+esc(p.codigo||"PROMOÇÃO")+"</div>";
+      html+="<div style='font-size:17px;font-weight:bold;margin-top:4px'>"+esc(detalhe)+"</div>";
+      if(descricao) html+="<div style='margin-top:5px;line-height:1.4'>"+esc(descricao)+"</div>";
+      html+="<div style='margin-top:7px;font-size:13px;color:#666'>"+esc(validade)+"</div></div>";
+    });
+    box.innerHTML=html;
+    var banner=container.querySelector(".banner-principal");
+    if(banner) banner.after(box); else { var acoes=container.querySelector(".acoes"); if(acoes) acoes.before(box); else container.prepend(box); }
+  }
+
   function renderCategorias(categorias, produtos) {
     var box = document.getElementById("categorias");
     if (!box) return;
@@ -107,20 +149,7 @@
       b.className = "botao";
       b.type = "button";
       b.textContent = nome;
-      b.onclick = function(){
-        var id = categoriaId(nome);
-        var alvo = document.getElementById(id);
-
-        if (alvo) {
-          alvo.scrollIntoView({behavior:"smooth", block:"start"});
-          return;
-        }
-
-        if (typeof window.irParaSecao === "function") {
-          window.irParaSecao(id);
-        }
-      };
-      b.setAttribute("aria-label", "Ir para categoria " + nome);
+      b.onclick = function(){ irParaSecao(categoriaId(nome)); };
       box.appendChild(b);
     });
   }
@@ -157,10 +186,6 @@
       }).forEach(function(produto){
         var card = document.createElement("div");
         card.className = "card-produto";
-        card.style.display = "flex";
-        card.style.flexDirection = "column";
-        card.style.height = "100%";
-        card.style.minWidth = "0";
 
         var foto = produto.foto
           ? '<img src="' + esc(produto.foto) + '" alt="' + esc(produto.nome) +
@@ -177,11 +202,6 @@
           "</button>";
 
         var btn = card.querySelector("button");
-
-        if (btn) {
-          btn.style.marginTop = "auto";
-          btn.style.width = "100%";
-        }
 
         if (produto.disponivel === false) {
           btn.disabled = true;
@@ -228,23 +248,27 @@
       var r = await Promise.all([
         supabaseClient.from("configuracoes_loja").select("*").order("id",{ascending:true}).limit(1),
         supabaseClient.from("categorias").select("*").eq("ativo",true).order("id",{ascending:true}),
-        supabaseClient.from("produtos").select("*").eq("ativo",true).order("id",{ascending:true})
+        supabaseClient.from("produtos").select("*").eq("ativo",true).order("id",{ascending:true}),
+        supabaseClient.from("promocoes").select("*").eq("ativo",true).order("id",{ascending:false})
       ]);
 
       if (r[0].error) throw r[0].error;
       if (r[1].error) throw r[1].error;
       if (r[2].error) throw r[2].error;
+      if (r[3].error) throw r[3].error;
 
       var config = (r[0].data || [])[0] || null;
       var categorias = r[1].data || [];
       var produtos = r[2].data || [];
+      var promocoes = r[3].data || [];
 
       aplicarConfiguracao(config);
+      renderPromocoes(promocoes);
       renderCategorias(categorias, produtos);
       renderProdutos(categorias, produtos);
 
       document.documentElement.dataset.cardapioSupabase = "ok";
-      console.log("Cardápio sincronizado:", {config:!!config,categorias:categorias.length,produtos:produtos.length});
+      console.log("Cardápio sincronizado:", {config:!!config,categorias:categorias.length,produtos:produtos.length,promocoes:promocoes.length});
     } catch (e) {
       console.error("Erro na sincronização do cardápio:", e);
     }

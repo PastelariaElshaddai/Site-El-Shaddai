@@ -1,7 +1,12 @@
-PACOTE COMPLETO CORRIGIDO — VERSAO COM AJUSTES DO CLIENTE
+CONFERÊNCIA DO PACOTE
+index.html       OK
+admin.html       OK
+admin.js         OK
+catalogo.js      OK
+pedido.html      OK
+script.js        OK
+style.css        OK
+admin.css        OK
+supabase.js      OK
 
-1. Checkout/RLS: corrigido diretamente no Supabase existente para clientes e pedidos; nao e necessario executar SQL deste pacote.
-2. Categorias: botoes dinamicos agora localizam diretamente a secao correspondente, sem depender exclusivamente de irParaSecao().
-3. Personalizar: cards agora usam flex column e o botao fica preso ao final do card, alinhando os botoes entre produtos com descricoes de tamanhos diferentes.
-4. Nenhuma tabela, coluna ou projeto novo foi criado.
-5. Nao substitua arquivos do ADM por uma versao antiga. Este pacote preserva a versao completa anterior e altera somente o catalogo.js para os dois ajustes visuais/de navegacao.
+Os três arquivos JavaScript foram verificados com node --check.
