@@ -1,0 +1,36 @@
+PASTELARIA EL SHADDAI — PACOTE COMPLETO CORRIGIDO
+
+Este pacote reúne os arquivos principais recuperados do projeto existente.
+Não criar outro projeto Supabase.
+Não executar SQL de criação de tabelas.
+A coluna produtos.tamanhos já existe.
+
+ARQUIVOS PRINCIPAIS
+index.html
+admin.html
+admin.js
+catalogo.js
+pedido.html
+script.js
+style.css
+admin.css
+supabase.js
+
+ORDEM DE TESTE
+1. Publicar os arquivos na raiz do repositório Site-El-Shaddai.
+2. Abrir o cardápio.
+3. Abrir admin.html.
+4. Testar conexão do Admin.
+5. Cadastrar categoria e produto.
+6. Testar tamanho/personalização.
+7. Testar carrinho e pedido.
+
+SUPABASE EXISTENTE
+https://qjwojyxfktabdkbiryfx.supabase.co
+Ref: qjwojyxfktabdkbiryfx
+
+LOGO
+O arquivo físico Logo.png não estava disponível no material recuperado. O
+index.html foi ajustado para o nome correto Logo.png. Se você tiver esse
+arquivo, coloque-o na raiz do repositório. A configuração de logo no Supabase
+continua podendo substituir a imagem pelo URL/base64 salvo na configuração.
