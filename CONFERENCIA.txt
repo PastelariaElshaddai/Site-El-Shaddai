@@ -1,12 +1,21 @@
 CONFERÊNCIA DO PACOTE
-index.html       OK
-admin.html       OK
-admin.js         OK
-catalogo.js      OK
-pedido.html      OK
-script.js        OK
-style.css        OK
-admin.css        OK
-supabase.js      OK
 
-Os três arquivos JavaScript foram verificados com node --check.
+Arquivos principais:
+admin.html
+admin.js
+catalogo.js
+index.html
+pedido.html
+acompanhar.html
+script.js
+style.css
+admin.css
+supabase.js
+
+Validações planejadas:
+1. Pedido chega ao ADM e permanece registrado.
+2. Status alterado no ADM aparece no acompanhamento do cliente em até 5 segundos.
+3. Cupom marcado como primeira compra não aparece nem aplica para cliente com compras registradas.
+4. Promoção marcada como destaque aparece no banner PROMOÇÃO DA SEMANA.
+5. WhatsApp mostra pedido organizado e link de acompanhamento.
+6. Imagem acima de 1,8 MB é otimizada antes de salvar.
