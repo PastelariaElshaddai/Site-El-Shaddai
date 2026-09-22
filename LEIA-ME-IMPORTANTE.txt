@@ -1,0 +1,16 @@
+PASTELARIA EL SHADDAI — PACOTE COMPLETO
+
+Este é o pacote consolidado do projeto existente. Não criar outro Supabase.
+Não executar SQL de criação. produtos.tamanhos já existe.
+Arquivos principais: index.html, admin.html, admin.js, catalogo.js, pedido.html,
+script.js, style.css, admin.css e supabase.js.
+
+Supabase existente:
+https://qjwojyxfktabdkbiryfx.supabase.co
+Ref: qjwojyxfktabdkbiryfx
+
+Tabelas existentes:
+categorias, clientes, configuracoes_loja, pedidos, produtos, promocoes.
+
+A logo física Logo.png não estava disponível nos arquivos recuperados. A
+configuração de logo do Supabase continua sendo a fonte para a interface.
