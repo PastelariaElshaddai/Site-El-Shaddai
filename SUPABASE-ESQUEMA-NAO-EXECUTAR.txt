@@ -1,7 +1,0 @@
-REFERÊNCIA — NÃO EXECUTAR
-categorias: id, nome, descricao, ativo, criado_em
-clientes: id, nome, telefone, endereco, quantidade_pedidos, total_gasto, criado_em
-configuracoes_loja: id, nome_loja, slogan, whatsapp, pix, logo, banner, loja_aberta, entrega_ativa, retirada_ativa, pagamento_pix, pagamento_cartao, pagamento_dinheiro, informacoes, criado_em
-pedidos: id, cliente_nome, cliente_telefone, endereco, tipo, pagamento, observacao, itens, total, status, criado_em
-produtos: id, nome, categoria, descricao, ingredientes, adicionais, preco, foto, ativo, disponivel, criado_em, tamanhos
-promocoes: id, codigo, desconto, descricao, validade, ativo, criado_em
