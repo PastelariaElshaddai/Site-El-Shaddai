@@ -1,0 +1,12 @@
+CONFERÊNCIA DO PACOTE
+index.html       OK
+admin.html       OK
+admin.js         OK
+catalogo.js      OK
+pedido.html      OK
+script.js        OK
+style.css        OK
+admin.css        OK
+supabase.js      OK
+
+Os três arquivos JavaScript foram verificados com node --check.
