@@ -1,0 +1,152 @@
+const $=id=>document.getElementById(id);
+let produtos=[],categorias=[],pedidos=[],clientes=[],promocoes=[],configLoja=null;
+let ingredientesAtual=[],adicionalAtual=[],adicionaisCatalogo=[],tamanhosAtual=[],fotoAtual=null,logoData=null,bannerData=null;
+let pesquisaProdutos="",categoriaFiltro="",statusPedidoFiltro="todos";
+const fidKeyMeta="elshaddai_fidelidade_meta",fidKeyBen="elshaddai_fidelidade_beneficio";
+
+const moeda=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+const arr=v=>Array.isArray(v)?v:[];
+function statusTexto(s){return ({novo:"Novo",em_preparo:"Em preparo",pronto:"Pronto",saiu_entrega:"Saiu para entrega",concluido:"Concluído",cancelado:"Cancelado"}[s]||s||"Novo");}
+function dataBR(v){try{return new Date(v).toLocaleString("pt-BR")}catch{return String(v||"")}}
+
+function definirStatus(texto, tipo="ok") {
+  const el=$("status");
+  if(!el)return;
+  el.textContent=texto;
+  el.style.background=tipo==="erro"?"#ffe8e8":"#eaf8ee";
+  el.style.color=tipo==="erro"?"#a00018":"#237b39";
+}
+
+async function testarConexaoSupabase(){
+  try{
+    if(!window.supabaseClient) throw new Error("Cliente Supabase não carregado.");
+    const r=await window.supabaseClient.from("categorias").select("id",{head:true,count:"exact"});
+    if(r.error) throw r.error;
+    definirStatus("Conectado");
+    return true;
+  }catch(e){
+    console.error("Falha na conexão com Supabase:",e);
+    definirStatus("Não conectado","erro");
+    return false;
+  }
+}
+
+async function iniciar(){
+  document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>abrirTela(b.dataset.screen)));
+  const fp=$("fotoProduto"); if(fp)fp.addEventListener("change",e=>lerImagem(e.target,f=>{fotoAtual=f;mostrarImagem("previewFoto",f)}));
+  const lf=$("configLogoFile"); if(lf)lf.addEventListener("change",e=>lerImagem(e.target,f=>{logoData=f;mostrarImagem("configLogoPreview",f)}));
+  const bf=$("configBannerFile"); if(bf)bf.addEventListener("change",e=>lerImagem(e.target,f=>{bannerData=f;mostrarImagem("configBannerPreview",f)}));
+  await carregarTudoCompleto();
+}
+function lerImagem(input,cb){const f=input.files?.[0];if(!f)return;if(f.size>1800000){alert("A imagem deve ter no máximo 1,8 MB.");input.value="";return}const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(f)}
+function mostrarImagem(id,src){const i=$(id);if(i&&src){i.src=src;i.style.display="block"}}
+function abrirTela(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));$(id)?.classList.add("active");document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.screen===id));const tit={inicio:"Início",produtos:"Produtos",categorias:"Categorias",configuracao:"Configuração da Loja",pedidos:"Pedidos",clientes:"Clientes",dashboard:"Dashboard",promocoes:"Promoções e Cupons",fidelidade:"Fidelidade dos Clientes",whatsapp:"Integração do WhatsApp"};$("tituloTela").textContent=tit[id]||"Início";if(id==="configuracao")carregarConfiguracaoLoja();if(id==="pedidos")carregarPedidos();if(id==="clientes")carregarClientes();if(id==="dashboard")carregarDashboard();if(id==="promocoes")carregarPromocoes();if(id==="fidelidade")carregarFidelidade();if(id==="whatsapp")carregarWhatsApp()}
+
+async function carregarTudoCompleto(){
+  definirStatus("Conectando...");
+  try{
+    if(!window.supabaseClient) throw new Error("O Supabase não foi carregado. Verifique supabase.js e a biblioteca do Supabase.");
+    const db=window.supabaseClient;
+    const r=await Promise.all([
+      db.from("categorias").select("*").order("id"),
+      db.from("produtos").select("*").order("id",{ascending:false}),
+      db.from("configuracoes_loja").select("*").order("id",{ascending:true}).limit(1)
+    ]);
+    if(r.some(x=>x.error)) throw new Error(r.find(x=>x.error)?.error?.message||"Erro no Supabase");
+    categorias=r[0].data||[];produtos=r[1].data||[];configLoja=(r[2].data||[])[0]||null;
+    montarAdicionais();popularCategorias();renderProdutos();renderCategorias();aplicarConfigNosCampos();
+    await Promise.all([carregarPedidos(true),carregarClientes(true),carregarDashboard(true),carregarPromocoes(true),carregarFidelidade(true),carregarWhatsApp(true)]);
+    definirStatus("Conectado");
+  }catch(e){
+    console.error(e);
+    definirStatus("Não conectado","erro");
+    const msg=e?.message||String(e);
+    console.error("Detalhes da conexão:",msg);
+  }
+}
+
+function popularCategorias(){const cats=categorias.filter(c=>c.ativo!==false);$("categoriaProduto").innerHTML=cats.map(c=>`<option value="${esc(c.nome)}">${esc(c.nome)}</option>`).join("")||'<option value="">Nenhuma categoria</option>';$("filtroCategoriaProdutos").innerHTML='<option value="">Todas</option>'+cats.map(c=>`<option value="${esc(c.nome)}">${esc(c.nome)}</option>`).join("")}
+function montarAdicionais(){const m=new Map();produtos.forEach(p=>arr(p.adicionais).forEach(a=>{if(a?.nome)m.set(a.nome,{nome:a.nome,preco:Number(a.preco||0)})}));adicionaisCatalogo=[...m.values()]}
+
+function novoProduto(){limparFormProduto();$("formTitulo").textContent="Novo produto";$("formProduto").classList.add("open");popularCategorias();}
+function editarProduto(id){const p=produtos.find(x=>String(x.id)===String(id));if(!p)return;limparFormProduto();$("formTitulo").textContent="Editar produto";$("produtoId").value=p.id;$("nomeProduto").value=p.nome||"";$("precoProduto").value=p.preco??"";$("categoriaProduto").value=p.categoria||"";$("descricaoProduto").value=p.descricao||"";$("produtoAtivo").checked=p.ativo!==false;$("produtoDisponivel").checked=p.disponivel!==false;fotoAtual=p.foto||null;mostrarImagem("previewFoto",fotoAtual);tamanhosAtual=arr(p.tamanhos).map(x=>({nome:String(x.nome||""),preco:Number(x.preco||0)}));const temT=$("produtoTemTamanhos"); if(temT)temT.checked=tamanhosAtual.length>0;renderizarTamanhosAdmin();ingredientesAtual=arr(p.ingredientes).map(x=>typeof x==="string"?{nome:x,podeRetirar:true}:{nome:x.nome||"",podeRetirar:x.podeRetirar!==false});adicionalAtual=arr(p.adicionais).map(x=>({nome:x.nome,preco:Number(x.preco||0)}));renderIngredientes();renderAdicionais();$("formProduto").classList.add("open");}
+function limparFormProduto(){
+  $("produtoId").value="";$("nomeProduto").value="";$("precoProduto").value="";$("descricaoProduto").value="";$("fotoProduto").value="";
+  $("produtoAtivo").checked=true;$("produtoDisponivel").checked=true;fotoAtual=null;ingredientesAtual=[];adicionalAtual=[];tamanhosAtual=[];
+  const tt=$("produtoTemTamanhos");if(tt)tt.checked=false;const te=$("tamanhosEditor");if(te)te.style.display="none";renderizarTamanhosAdmin();
+  $("previewFoto").style.display="none";$("previewFoto").removeAttribute("src");renderIngredientes();renderAdicionais();
+}
+function cancelarProduto(){$("formProduto").classList.remove("open")}
+function alternarTamanhosProduto(){
+  const ativo=$("produtoTemTamanhos")?.checked;
+  const editor=$("tamanhosEditor");
+  if(editor)editor.style.display=ativo?"block":"none";
+  if(ativo && !tamanhosAtual.length) renderizarTamanhosAdmin();
+}
+function adicionarTamanhoProduto(){
+  const nome=$("novoTamanhoNome")?.value.trim();
+  const preco=Number($("novoTamanhoPreco")?.value);
+  if(!nome||!Number.isFinite(preco)||preco<0)return alert("Informe o nome e o preço do tamanho.");
+  if(tamanhosAtual.some(t=>t.nome.toLowerCase()===nome.toLowerCase()))return alert("Esse tamanho já foi adicionado.");
+  tamanhosAtual.push({nome,preco});
+  $("novoTamanhoNome").value="";$("novoTamanhoPreco").value="";
+  const ativo=$("produtoTemTamanhos");if(ativo)ativo.checked=true;
+  alternarTamanhosProduto();renderizarTamanhosAdmin();
+}
+function removerTamanhoProduto(i){tamanhosAtual.splice(i,1);renderizarTamanhosAdmin()}
+function renderizarTamanhosAdmin(){
+  const lista=$("listaTamanhos");if(!lista)return;
+  lista.innerHTML=tamanhosAtual.length?tamanhosAtual.map((t,i)=>`<div class="ingredient-row"><div class="check"><strong>${esc(t.nome)}</strong> — ${moeda(t.preco)}</div><button class="btn danger" type="button" onclick="removerTamanhoProduto(${i})">Remover</button></div>`).join(""):"<div class='help'>Nenhum tamanho cadastrado.</div>";
+}
+
+function adicionarIngrediente(){const n=$("novoIngrediente").value.trim();if(!n)return;if(ingredientesAtual.some(x=>x.nome.toLowerCase()===n.toLowerCase()))return alert("Esse ingrediente já foi adicionado.");ingredientesAtual.push({nome:n,podeRetirar:true});$("novoIngrediente").value="";renderIngredientes()}
+function removerIngrediente(i){ingredientesAtual.splice(i,1);renderIngredientes()}
+function renderIngredientes(){$("ingredientesLista").innerHTML=ingredientesAtual.length?ingredientesAtual.map((x,i)=>`<div class="ingredient-row"><label class="check"><input type="checkbox" ${x.podeRetirar!==false?"checked":""} onchange="ingredientesAtual[${i}].podeRetirar=this.checked"> ${esc(x.nome)}</label><button class="btn danger" onclick="removerIngrediente(${i})">Remover</button></div>`).join(""):"<div class='help'>Nenhum ingrediente cadastrado.</div>"}
+function criarAdicional(){const n=$("novoAdicionalNome").value.trim(),p=Number($("novoAdicionalPreco").value);if(!n||!Number.isFinite(p)||p<0)return alert("Informe nome e preço do adicional.");const e=adicionaisCatalogo.find(a=>a.nome.toLowerCase()===n.toLowerCase());if(e)e.preco=p;else adicionaisCatalogo.push({nome:n,preco:p});if(!adicionalAtual.some(a=>a.nome===n))adicionalAtual.push({nome:n,preco:p});$("novoAdicionalNome").value="";$("novoAdicionalPreco").value="";renderAdicionais()}
+function renderAdicionais(){$("adicionaisLista").innerHTML=adicionaisCatalogo.map((a,i)=>`<label class="check"><input type="checkbox" ${adicionalAtual.some(x=>x.nome===a.nome)?"checked":""} onchange="alternarAdicional(${i},this.checked)"> ${esc(a.nome)} — ${moeda(a.preco)}</label>`).join("")||"<span class='help'>Nenhum adicional criado.</span>"}
+function alternarAdicional(i,ok){const a=adicionaisCatalogo[i];if(ok&&!adicionalAtual.some(x=>x.nome===a.nome))adicionalAtual.push({...a});if(!ok)adicionalAtual=adicionalAtual.filter(x=>x.nome!==a.nome)}
+async function salvarProduto(){const nome=$("nomeProduto").value.trim(),preco=Number($("precoProduto").value),categoria=$("categoriaProduto").value;if(!nome||!Number.isFinite(preco)||preco<0||!categoria)return alert("Preencha nome, preço e categoria.");const payload={nome,preco,categoria,descricao:$("descricaoProduto").value.trim(),ativo:$("produtoAtivo").checked,disponivel:$("produtoDisponivel").checked,foto:fotoAtual||null,ingredientes:ingredientesAtual,adicionais:adicionalAtual,tamanhos:$("produtoTemTamanhos")?.checked?tamanhosAtual:[]};const id=$("produtoId").value;const r=id?await supabaseClient.from("produtos").update(payload).eq("id",id):await supabaseClient.from("produtos").insert(payload);if(r.error)return alert("Não foi possível salvar o produto.\n\n"+r.error.message);cancelarProduto();await carregarTudoCompleto()}
+async function excluirProduto(id){if(!confirm("Excluir este produto?"))return;const r=await supabaseClient.from("produtos").delete().eq("id",id);if(r.error)return alert(r.error.message);await carregarTudoCompleto()}
+function aplicarPesquisaProdutos(){$("pesquisaProdutos").value;pesquisaProdutos=$("pesquisaProdutos").value.trim().toLowerCase();renderProdutos()}
+function aplicarFiltroCategoria(){categoriaFiltro=$("filtroCategoriaProdutos").value;renderProdutos()}
+function renderProdutos(){const termo=pesquisaProdutos,box=$("listaProdutos");if(!box)return;const f=produtos.filter(p=>(!categoriaFiltro||p.categoria===categoriaFiltro)&&(!termo||[p.nome,p.categoria,p.descricao].join(" ").toLowerCase().includes(termo)));box.innerHTML=f.length?f.map(p=>`<article class="product">${p.foto?`<img src="${esc(p.foto)}" alt="">`:`<div style="width:78px;height:78px;border-radius:12px;background:#eee;display:grid;place-items:center">Sem foto</div>`}<div><h3>${esc(p.nome)} <span class="badge ${p.ativo!==false?"on":"off"}">${p.ativo!==false?"Ativo":"Inativo"}</span> <span class="badge ${p.disponivel!==false?"on":"off"}">${p.disponivel!==false?"Disponível":"Indisponível"}</span></h3><p>${esc(p.categoria||"Sem categoria")}</p><p>${esc(p.descricao||"Sem descrição")}</p><p class="price">${moeda(p.preco)}</p>${arr(p.tamanhos).length?`<p><strong>Tamanhos:</strong> ${arr(p.tamanhos).map(t=>`${esc(t.nome)} — ${moeda(t.preco)}`).join(" · ")}</p>`:""}</div><div class="actions"><button class="btn light" onclick="editarProduto('${String(p.id)}')">Editar</button><button class="btn danger" onclick="excluirProduto('${String(p.id)}')">Excluir</button></div></article>`).join(""):"<div class='empty'>Nenhum produto encontrado.</div>"}
+
+
+
+async function salvarCategoria(){const id=$("categoriaEditId").value,nome=$("nomeCategoria").value.trim(),descricao=$("descricaoCategoria").value.trim(),ativo=$("categoriaAtiva").checked;if(!nome)return alert("Informe o nome da categoria.");const dup=categorias.some(c=>c.nome.toLowerCase()===nome.toLowerCase()&&String(c.id)!==String(id));if(dup)return alert("Essa categoria já existe.");const r=id?await supabaseClient.from("categorias").update({nome,descricao,ativo}).eq("id",id):await supabaseClient.from("categorias").insert({nome,descricao,ativo});if(r.error)return alert(r.error.message);$("categoriaEditId").value="";$("nomeCategoria").value="";$("descricaoCategoria").value="";$("categoriaAtiva").checked=true;await carregarTudoCompleto()}
+function editarCategoria(id){const c=categorias.find(x=>String(x.id)===String(id));if(!c)return;$("categoriaEditId").value=c.id;$("nomeCategoria").value=c.nome||"";$("descricaoCategoria").value=c.descricao||"";$("categoriaAtiva").checked=c.ativo!==false;abrirTela("categorias")}
+async function excluirCategoria(id){const c=categorias.find(x=>String(x.id)===String(id));if(!c)return;if(produtos.some(p=>p.categoria===c.nome))return alert("Não é possível excluir uma categoria que possui produtos.");if(!confirm("Excluir esta categoria?"))return;const r=await supabaseClient.from("categorias").delete().eq("id",id);if(r.error)return alert(r.error.message);await carregarTudoCompleto()}
+function renderCategorias(){$("listaCategorias").innerHTML=categorias.length?categorias.map(c=>`<article class="product"><div></div><div><h3>${esc(c.nome)} <span class="badge ${c.ativo!==false?"on":"off"}">${c.ativo!==false?"Ativa":"Inativa"}</span></h3><p>${esc(c.descricao||"Sem descrição")}</p><p>${produtos.filter(p=>p.categoria===c.nome).length} produto(s)</p></div><div class="actions"><button class="btn light" onclick="editarCategoria('${c.id}')">Editar</button><button class="btn danger" onclick="excluirCategoria('${c.id}')">Excluir</button></div></article>`).join(""):"<div class='empty'>Nenhuma categoria cadastrada.</div>"}
+
+function aplicarConfigNosCampos(){const c=configLoja;if(!c)return;$("configNomeLoja").value=c.nome_loja||"";$("configSlogan").value=c.slogan||"";$("configWhatsapp").value=c.whatsapp||"";$("configInstagram").value=c.instagram||"";$("configAtendimentoAtivo").checked=c.atendimento_ativo!==false;$("configInstagramAtivo").checked=c.instagram_ativo!==false;$("configPix").value=c.pix||"";$("configInformacoes").value=c.informacoes||"";$("configLojaAberta").checked=c.loja_aberta!==false;$("configEntrega").checked=c.entrega_ativa!==false;$("configRetirada").checked=c.retirada_ativa!==false;$("configPagamentoPix").checked=c.pagamento_pix!==false;$("configPagamentoCartao").checked=c.pagamento_cartao!==false;$("configPagamentoDinheiro").checked=c.pagamento_dinheiro!==false;$("configLogoUrl").value=c.logo&&/^https?:\/\//.test(c.logo)?c.logo:"";$("configBannerUrl").value=c.banner&&/^https?:\/\//.test(c.banner)?c.banner:"";logoData=c.logo||null;bannerData=c.banner||null;mostrarImagem("configLogoPreview",logoData);mostrarImagem("configBannerPreview",bannerData)}
+async function carregarConfiguracaoLoja(silencioso=false){try{const r=await supabaseClient.from("configuracoes_loja").select("*").order("id",{ascending:true}).limit(1);if(r.error)throw r.error;configLoja=(r.data||[])[0]||null;aplicarConfigNosCampos()}catch(e){if(!silencioso)alert(e.message||e)}}
+async function salvarConfiguracaoLoja(){const payload={nome_loja:$("configNomeLoja").value.trim()||"Pastelaria El Shaddai",slogan:$("configSlogan").value.trim()||"Feito a dois, no ponto pra você!",whatsapp:$("configWhatsapp").value.replace(/\D/g,""),instagram:$("configInstagram").value.trim(),atendimento_ativo:$("configAtendimentoAtivo").checked,instagram_ativo:$("configInstagramAtivo").checked,pix:$("configPix").value.trim(),informacoes:$("configInformacoes").value.trim(),loja_aberta:$("configLojaAberta").checked,entrega_ativa:$("configEntrega").checked,retirada_ativa:$("configRetirada").checked,pagamento_pix:$("configPagamentoPix").checked,pagamento_cartao:$("configPagamentoCartao").checked,pagamento_dinheiro:$("configPagamentoDinheiro").checked,logo:logoData||$("configLogoUrl").value.trim()||null,banner:bannerData||$("configBannerUrl").value.trim()||null};let r;if(configLoja?.id)r=await supabaseClient.from("configuracoes_loja").update(payload).eq("id",configLoja.id);else r=await supabaseClient.from("configuracoes_loja").insert(payload);if(r.error)return alert("Não foi possível salvar a configuração.\n\n"+r.error.message);$("configAjuda").textContent="Configuração salva no Supabase. O cardápio do cliente poderá carregá-la ao abrir ou atualizar a página.";await carregarConfiguracaoLoja(true)}
+
+async function carregarPedidos(silencioso=false){try{const r=await supabaseClient.from("pedidos").select("*").order("id",{ascending:false});if(r.error)throw r.error;pedidos=r.data||[];renderPedidos();renderInicioPedidos()}catch(e){if(!silencioso)alert(e.message||e)}}
+function filtrarPedidos(s){statusPedidoFiltro=s;renderPedidos()}
+function itensPedido(p){return arr(p.itens)}
+function renderPedidos(){const box=$("listaPedidos");const f=statusPedidoFiltro==="todos"?pedidos:pedidos.filter(p=>(p.status||"novo")===statusPedidoFiltro);if(!f.length){box.innerHTML="<div class='empty'>Nenhum pedido encontrado.</div>";return}box.innerHTML=f.map(p=>{const itens=itensPedido(p);return `<article class="order-card"><div class="order-head"><div><div class="order-number">Pedido #${esc(p.id)}</div><div class="order-date">${dataBR(p.criado_em)}</div></div><span class="status-badge status-${esc(p.status||"novo")}">${esc(statusTexto(p.status))}</span></div><div class="order-body"><div class="order-grid"><div class="order-box"><strong>Cliente</strong>${esc(p.cliente_nome||"Não informado")}<br>${esc(p.cliente_telefone||"")}</div><div class="order-box"><strong>Atendimento</strong>${esc(p.tipo||"")}<br>${esc(p.endereco||"")}</div><div class="order-box"><strong>Pagamento</strong>${esc(p.pagamento||"Não informado")}</div><div class="order-box"><strong>Observações</strong>${esc(p.observacao||"Sem observações")}</div></div><div class="order-box" style="margin-top:12px"><strong>Itens</strong><ul class="order-items">${itens.map(i=>`<li>${esc(i.quantidade||1)}x ${esc(i.nome||i.produto||"")} — ${moeda(i.preco||0)}</li>`).join("")||"<li>Itens não detalhados</li>"}</ul></div><div style="margin-top:12px" class="order-total">Total: ${moeda(p.total)}</div><div class="order-actions"><select onchange="atualizarStatusPedido('${p.id}',this.value)"><option value="novo" ${p.status==="novo"?"selected":""}>Novo</option><option value="em_preparo" ${p.status==="em_preparo"?"selected":""}>Em preparo</option><option value="pronto" ${p.status==="pronto"?"selected":""}>Pronto</option><option value="saiu_entrega" ${p.status==="saiu_entrega"?"selected":""}>Saiu para entrega</option><option value="concluido" ${p.status==="concluido"?"selected":""}>Concluído</option><option value="cancelado" ${p.status==="cancelado"?"selected":""}>Cancelado</option></select></div></div></article>`}).join("")}
+async function atualizarStatusPedido(id,status){const r=await supabaseClient.from("pedidos").update({status}).eq("id",id);if(r.error)return alert(r.error.message);await carregarPedidos(true)}
+function renderInicioPedidos(){const b=$("inicioPedidosLista");const f=pedidos.slice(0,5);b.innerHTML=f.length?f.map(p=>`<div class="coupon"><span><strong>Pedido #${esc(p.id)}</strong><br>${esc(p.cliente_nome||"")} — ${esc(statusTexto(p.status))}</span><strong>${moeda(p.total)}</strong></div>`).join(""):"<div class='empty'>Nenhum pedido registrado.</div>"}
+
+async function carregarClientes(silencioso=false){try{const r=await supabaseClient.from("clientes").select("*").order("total_gasto",{ascending:false});if(r.error)throw r.error;clientes=r.data||[];renderClientes()}catch(e){if(!silencioso)alert(e.message||e)}}
+function renderClientes(){const q=($("pesquisaClientes").value||"").toLowerCase();const f=clientes.filter(c=>[c.nome,c.telefone,c.endereco].join(" ").toLowerCase().includes(q));$("clientesQtd").textContent=clientes.length;$("clientesPedidos").textContent=clientes.reduce((s,c)=>s+Number(c.quantidade_pedidos||0),0);$("clientesGasto").textContent=moeda(clientes.reduce((s,c)=>s+Number(c.total_gasto||0),0));$("listaClientes").innerHTML=f.length?f.map(c=>`<article class="product"><div></div><div><h3>${esc(c.nome||"Cliente")}</h3><p>${esc(c.telefone||"")}</p><p>${Number(c.quantidade_pedidos||0)} pedido(s) · ${moeda(c.total_gasto)}</p><p>${esc(c.endereco||"Endereço não informado")}</p></div><div class="actions">${c.telefone?`<a class="btn light" href="https://wa.me/${String(c.telefone).replace(/\D/g,"")}" target="_blank" rel="noopener">WhatsApp</a>`:""}</div></article>`).join(""):"<div class='empty'>Nenhum cliente encontrado.</div>"}
+
+async function carregarDashboard(silencioso=false){try{const [pr,cl]=await Promise.all([supabaseClient.from("pedidos").select("*").order("id",{ascending:false}),supabaseClient.from("clientes").select("*")]);if(pr.error)throw pr.error;if(cl.error)throw cl.error;const all=pr.data||[],today=new Date();const ini=new Date(today.getFullYear(),today.getMonth(),today.getDate());const hoje=all.filter(p=>new Date(p.criado_em)>=ini);const fat=hoje.reduce((s,p)=>s+Number(p.total||0),0);const vend=hoje.reduce((s,p)=>s+itensPedido(p).reduce((x,i)=>x+Number(i.quantidade||1),0),0);$("dashPedidosHoje").textContent=hoje.length;$("dashFaturamentoHoje").textContent=moeda(fat);$("dashClientes").textContent=(cl.data||[]).length;$("dashProdutosVendidos").textContent=vend;const counts={novo:0,em_preparo:0,pronto:0,saiu_entrega:0,concluido:0,cancelado:0};hoje.forEach(p=>counts[p.status||"novo"]=(counts[p.status||"novo"]||0)+1);$("dashStatus").innerHTML=Object.entries(counts).map(([k,v])=>`<p><strong>${esc(statusTexto(k))}:</strong> ${v}</p>`).join("");$("dashResumoVendas").innerHTML=`<p>Pedidos hoje: <strong>${hoje.length}</strong></p><p>Faturamento: <strong>${moeda(fat)}</strong></p><p>Produtos vendidos: <strong>${vend}</strong></p>`;$("inicioPedidos").textContent=hoje.length;$("inicioFaturamento").textContent=moeda(fat);$("inicioClientes").textContent=(cl.data||[]).length;$("inicioProdutosVendidos").textContent=vend}catch(e){if(!silencioso)alert(e.message||e)}}
+
+async function carregarPromocoes(silencioso=false){try{const r=await supabaseClient.from("promocoes").select("*").order("id",{ascending:false});if(r.error)throw r.error;promocoes=r.data||[];renderPromocoes()}catch(e){$("listaPromocoes").innerHTML=`<div class='notice'>A tabela de promoções não pôde ser consultada. Se ela ainda não existir, execute o SQL do Bloco 8.</div>`;if(!silencioso)console.error(e)}}
+async function salvarPromocao(){const codigo=$("promoCodigo").value.trim().toUpperCase(),desconto=Number($("promoDesconto").value),descricao=$("promoDescricao").value.trim(),validade=$("promoValidade").value||null,ativo=$("promoAtivo").checked;if(!codigo||!Number.isFinite(desconto)||desconto<0||desconto>100)return alert("Informe código e desconto entre 0 e 100.");const r=await supabaseClient.from("promocoes").insert({codigo,desconto,descricao,validade,ativo});if(r.error)return alert(r.error.message);$("promoCodigo").value="";$("promoDesconto").value="";$("promoDescricao").value="";$("promoValidade").value="";await carregarPromocoes(true)}
+async function excluirPromocao(id){if(!confirm("Excluir esta promoção?"))return;const r=await supabaseClient.from("promocoes").delete().eq("id",id);if(r.error)return alert(r.error.message);await carregarPromocoes(true)}
+function renderPromocoes(){$("listaPromocoes").innerHTML=promocoes.length?promocoes.map(p=>`<div class="coupon"><span><strong>${esc(p.codigo)}</strong><br>${Number(p.desconto||0)}% — ${esc(p.descricao||"")}<br><small>Validade: ${esc(p.validade||"Sem data")} · ${p.ativo!==false?"Ativa":"Inativa"}</small></span><button class="btn danger" onclick="excluirPromocao('${p.id}')">Excluir</button></div>`).join(""):"<div class='empty'>Nenhuma promoção cadastrada.</div>"}
+
+function metaFid(){return Math.max(1,Number(localStorage.getItem(fidKeyMeta)||10))}function benFid(){return localStorage.getItem(fidKeyBen)||"1 pastel grátis"}
+async function carregarFidelidade(silencioso=false){try{const r=await supabaseClient.from("clientes").select("*").order("quantidade_pedidos",{ascending:false});if(r.error)throw r.error;clientes=r.data||[];$("fidMeta").value=metaFid();$("fidBeneficio").value=benFid();renderFidelidade()}catch(e){if(!silencioso)alert(e.message||e)}}
+function salvarFidelidadeConfig(){const m=Math.max(1,Number($("fidMeta").value||10)),b=$("fidBeneficio").value.trim()||"1 pastel grátis";localStorage.setItem(fidKeyMeta,String(m));localStorage.setItem(fidKeyBen,b);renderFidelidade();alert("Regra de fidelidade salva.")}
+function renderFidelidade(){const q=($("pesquisaFidelidade").value||"").toLowerCase(),m=metaFid(),f=clientes.filter(c=>[c.nome,c.telefone].join(" ").toLowerCase().includes(q));$("fidClientes").textContent=clientes.length;$("fidLoyais").textContent=clientes.filter(c=>Number(c.quantidade_pedidos||0)>=m).length;$("fidCompras").textContent=clientes.reduce((s,c)=>s+Number(c.quantidade_pedidos||0),0);$("fidBeneficios").textContent=clientes.reduce((s,c)=>s+Math.floor(Number(c.quantidade_pedidos||0)/m),0);$("listaFidelidade").innerHTML=f.length?f.map(c=>{const n=Number(c.quantidade_pedidos||0),b=Math.floor(n/m),rest=n%m,prox=rest===0?m:m-rest,pct=rest===0&&n>0?100:Math.round((rest/m)*100),atingiu=n>0&&rest===0;return `<div class="rank"><span><strong>${esc(c.nome||"Cliente")}</strong><br>${n} compra(s) · ${moeda(c.total_gasto)}<br><small>${atingiu?"Meta atingida":("Faltam "+prox+" compra(s) para a próxima meta")}</small><div style="margin-top:7px;height:7px;background:#eee;border-radius:8px;overflow:hidden"><span style="display:block;width:${pct}%;height:100%;background:#c62828"></span></div></span><span style="text-align:right">${b>0?b+" benefício(s) conquistado(s)":"Em progresso"}</span></div>`}).join(""):"<div class='empty'>Nenhum cliente encontrado.</div>"}
+
+async function carregarWhatsApp(silencioso=false){if(!configLoja)await carregarConfiguracaoLoja(true);$("whatsappNumero").value=(configLoja?.whatsapp||"").replace(/\D/g,"")||"5585988944421";$("whatsappResumo").checked=true}
+async function salvarWhatsApp(){const n=$("whatsappNumero").value.replace(/\D/g,"");if(n.length<12)return alert("Informe um número de WhatsApp válido.");if(!configLoja){await carregarConfiguracaoLoja(true)};const payload={whatsapp:n};const r=configLoja?.id?await supabaseClient.from("configuracoes_loja").update(payload).eq("id",configLoja.id):await supabaseClient.from("configuracoes_loja").insert({nome_loja:"Pastelaria El Shaddai",slogan:"Feito a dois, no ponto pra você!",whatsapp:n,loja_aberta:true,entrega_ativa:true,retirada_ativa:true,pagamento_pix:true,pagamento_cartao:true,pagamento_dinheiro:true});if(r.error)return alert(r.error.message);await carregarConfiguracaoLoja(true);$("whatsappAjuda").textContent="Número salvo na configuração central da loja."}
+function testarWhatsApp(){const n=$("whatsappNumero").value.replace(/\D/g,"");if(n.length<12)return alert("Informe um número válido.");const msg="Teste da integração do WhatsApp — Pastelaria El Shaddai.\n\nO número está configurado corretamente.";window.open("https://wa.me/"+n+"?text="+encodeURIComponent(msg),"_blank")}
+
+document.addEventListener("DOMContentLoaded",iniciar);
