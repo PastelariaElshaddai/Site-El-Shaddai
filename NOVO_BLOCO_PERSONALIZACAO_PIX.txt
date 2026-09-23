@@ -1,0 +1,25 @@
+NOVO BLOCO — PERSONALIZAÇÃO VISUAL + FLUXO PIX
+
+1. CONFIGURAÇÃO DA LOJA
+- Adicionada a área “Personalização visual”.
+- Permite escolher cores do fundo, topo, texto do topo, banner, texto do banner, botões e destaque.
+- As cores são salvas dentro do campo já existente “informacoes” da tabela configuracoes_loja usando um marcador interno.
+- Nenhuma tabela ou coluna nova foi criada.
+- Configurações antigas continuam sendo aceitas.
+
+2. CARDÁPIO DO CLIENTE
+- As cores salvas no ADM são aplicadas automaticamente no cardápio.
+- O nome, slogan, logo e banner continuam vindo do Supabase.
+
+3. PIX NO CHECKOUT
+- Ao escolher “Pix > Pagar agora”, o pedido é registrado e a tela mostra a etapa de pagamento.
+- Exibe a chave Pix configurada.
+- Botão para copiar a chave Pix.
+- Campo para selecionar foto/PDF do comprovante.
+- Botão “Já paguei — enviar comprovante”. Em celulares que suportam compartilhamento de arquivos, tenta compartilhar o comprovante junto com a mensagem; caso contrário, abre o WhatsApp e orienta anexar o comprovante.
+- O pedido permanece com status de pagamento “AGUARDANDO COMPROVANTE” até a conferência manual.
+- Não existe confirmação automática de pagamento.
+
+4. LIMITAÇÃO INTENCIONAL
+- Não foi criada integração bancária, webhook ou API de confirmação de Pix.
+- A chave atual continua sendo a configurada no campo Pix da loja.
