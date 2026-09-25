@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pastelaria El Shaddai</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><img id="logo" src="Logo.png" alt="Logo"><span><strong id="nomeLoja">Pastelaria El Shaddai</strong><small id="slogan">Feito a dois, no ponto pra você!</small></span></a>
+  <div class="top-actions"><a id="instagramBtn" class="icon-btn" href="#" target="_blank" rel="noopener" aria-label="Instagram">◎</a><a id="whatsappBtn" class="icon-btn" href="#" target="_blank" rel="noopener" aria-label="WhatsApp">◉</a><a class="cart-btn" href="pedido.html">Carrinho <b id="cartCount">0</b></a></div>
+</header>
+<section class="hero"><img id="banner" alt="Banner"><div class="hero-copy"><h1 id="heroTitle">Cardápio</h1><p id="heroInfo"></p></div></section>
+<main class="container">
+  <div class="search-row"><input id="busca" placeholder="Pesquisar produto..." autocomplete="off"></div>
+  <nav id="categorias" class="chips"></nav>
+  <section id="produtos" class="grid"></section>
+</main>
+<div id="modal" class="modal hidden"><div class="modal-card"><button id="fecharModal" class="close">×</button><div id="modalBody"></div></div></div>
+<div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase.js"></script><script src="script.js"></script>
+</body></html>
