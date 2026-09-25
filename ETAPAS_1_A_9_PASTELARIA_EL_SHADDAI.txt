@@ -1,0 +1,28 @@
+PASTELARIA EL SHADDAI — ETAPAS 1 A 9
+
+ETAPA 1 — CARDÁPIO DO CLIENTE
+Categorias dinâmicas pelo ADM; busca; produtos com fotos, descrição e ingredientes; tamanhos personalizados; adicionais; tamanho obrigatório quando houver; disponibilidade; loja aberta/fechada; nome, slogan, logo e banner pelo Supabase; Instagram e WhatsApp configuráveis.
+
+ETAPA 2 — CARRINHO
+Preservar tamanho e adicionais; controlar quantidade; subtotal por item; alterar/remover; total correto.
+
+ETAPA 3 — CHECKOUT
+Entrega/retirada; endereço; observações; Pix; cartão; dinheiro; troco; cupom; fidelidade; taxa de entrega; validações conforme configurações da loja.
+
+ETAPA 4 — PEDIDO
+Salvar no Supabase produto, tamanho, adicionais, quantidade, preço, subtotal, desconto, taxa, total, pagamento, cliente, endereço e observação. Exibir corretamente no ADM.
+
+ETAPA 5 — WHATSAPP
+Gerar mensagem organizada com número do pedido, cliente, telefone, tipo, endereço, produtos, tamanhos, adicionais, valores, desconto, taxa, total, pagamento e observação.
+
+ETAPA 6 — ADM
+Manter a apresentação aprovada e completar produtos, tamanhos ilimitados, adicionais, fotos, categorias, pedidos, status, clientes, promoções, fidelidade, configurações, WhatsApp, Instagram, entrega e dashboard real.
+
+ETAPA 7 — ACOMPANHAMENTO
+Novo → Aceito → Em preparo → Saiu para entrega / Pronto para retirada → Entregue.
+
+ETAPA 8 — FIDELIDADE
+10 compras = 1 pastel grátis, com controle de compras e benefícios.
+
+ETAPA 9 — ENTREGA
+Preparar as regras de entrega sem inventar API de mapas. GPS não deve ser apresentado como distância por estrada.

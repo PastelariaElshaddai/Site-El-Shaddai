@@ -1,0 +1,87 @@
+PASTELARIA EL SHADDAI — LISTA COMPLETA DO PROJETO
+
+1. CARDÁPIO DO CLIENTE
+- Categorias realmente dinâmicas pelo ADM
+- Busca funcionando
+- Produtos, fotos, descrição e ingredientes
+- Tamanhos personalizados
+- Adicionais
+- Escolha obrigatória de tamanho quando houver
+- Disponível/indisponível
+- Loja aberta/fechada
+- Nome, slogan, logo e banner vindos do Supabase
+- Instagram e WhatsApp configuráveis
+
+2. CARRINHO
+- Tamanho preservado
+- Adicionais preservados
+- Quantidade
+- Subtotal de cada item
+- Alterar/remover item
+- Total correto
+
+3. CHECKOUT
+- Entrega ou retirada
+- Endereço
+- Observações
+- Pix
+- Cartão
+- Dinheiro
+- Troco
+- Cupom
+- Fidelidade
+- Taxa de entrega
+- Validações conforme as configurações da loja
+
+4. PEDIDO
+O pedido precisa chegar completo ao Supabase:
+produto → tamanho → adicionais → quantidade → preço → subtotal → desconto → taxa → total → pagamento → cliente → endereço → observação
+
+Depois, aparecer corretamente no ADM.
+
+5. WHATSAPP
+A mensagem deve conter:
+- número do pedido
+- cliente
+- telefone
+- entrega/retirada
+- endereço
+- produtos
+- tamanhos
+- adicionais
+- valores
+- desconto
+- taxa
+- total
+- pagamento
+- observação
+
+6. ADM
+Preservar a apresentação aprovada e acrescentar:
+- edição completa dos produtos
+- tamanhos sem limite de P/M/G
+- adicionais
+- fotos
+- categorias
+- pedidos
+- alteração de status
+- clientes
+- promoções
+- fidelidade
+- configurações
+- WhatsApp
+- Instagram
+- entrega
+- dashboard com números reais
+
+7. ACOMPANHAMENTO
+O cliente poderá consultar o pedido e acompanhar:
+Novo → Aceito → Em preparo → Saiu para entrega / Pronto para retirada → Entregue
+
+8. FIDELIDADE
+Regra definida:
+10 compras = 1 pastel grátis, com controle de compras e benefícios.
+
+9. ENTREGA
+Preparar a estrutura para as regras de entrega definidas, sem inventar API de mapas.
+GPS sozinho não será apresentado como cálculo de distância por estrada.

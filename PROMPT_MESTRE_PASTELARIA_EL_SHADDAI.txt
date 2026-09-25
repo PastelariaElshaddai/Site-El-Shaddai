@@ -1,0 +1,35 @@
+PASTELARIA EL SHADDAI — PROMPT MESTRE PARA O HUB
+
+CONTEXTO
+Este é o projeto atual da Pastelaria El Shaddai. NÃO reiniciar o projeto, NÃO criar outro Supabase e NÃO reutilizar o projeto antigo como base. Continuar o projeto atual e preservar a apresentação do cliente e do ADM já construída e aprovada.
+
+Slogan:
+“Feito a dois, no ponto pra você!”
+
+PROCESSO OBRIGATÓRIO
+PLANEJAR → CONSTRUIR → INTEGRAR → REVISAR → TESTAR TUDO NO FINAL.
+
+PREFERÊNCIAS
+O trabalho deve ser simples de acompanhar, com arquivos completos quando necessário. Evitar alterações fragmentadas que deixem scripts duplicados ou conflitantes.
+
+SUPABASE
+Usar o projeto Supabase já existente da Pastelaria El Shaddai. Não criar outro projeto. Não apagar tabelas existentes. Não inventar campos ou tabelas sem antes verificar o banco.
+
+TABELAS EXISTENTES
+categorias
+clientes
+configuracoes_loja
+pedidos
+produtos
+promocoes
+
+O campo tamanhos em produtos já foi criado e deve ser usado, sem pedir sua criação novamente sem verificar.
+
+REGRAS IMPORTANTES
+- Não hardcodar no cliente informações que devem vir do Supabase.
+- Não inventar API da Agilizone ou de mapas.
+- GPS sozinho não é cálculo de distância por estrada.
+- Não criar números falsos no dashboard.
+- Não deixar scripts duplicados/conflictantes.
+- Preservar a apresentação visual atual que foi aprovada.
+- Fazer a integração completa entre ADM → Supabase → cliente.
