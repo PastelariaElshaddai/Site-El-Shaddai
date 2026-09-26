@@ -31,3 +31,4 @@ As políticas RLS existentes permitem operações anon no estado verificado do b
 A estrutura atual do banco não possui colunas específicas para todas as futuras regras de entrega, estatísticas, fidelidade avançada e horários. Por isso este pacote não inventa essas colunas. O pedido guarda tamanho, adicionais, subtotal do item e dados de checkout dentro de `itens`/campos existentes.
 
 Antes de publicar, substitua/adicione `Logo.png` se ele não estiver no repositório.
+Teste de Pull Request — Pastelaria El Shaddai.
