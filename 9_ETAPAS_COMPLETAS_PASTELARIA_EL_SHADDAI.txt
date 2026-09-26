@@ -1,0 +1,92 @@
+PASTELARIA EL SHADDAI — 9 ETAPAS COMPLETAS
+
+Objetivo: completar o projeto atual, sem reiniciar, sem criar outro Supabase e preservando a apresentação aprovada.
+
+PROCESSO: PLANEJAR → CONSTRUIR → INTEGRAR → REVISAR → TESTAR TUDO NO FINAL.
+
+1. CARDÁPIO DO CLIENTE
+- Categorias realmente dinâmicas pelo ADM
+- Busca funcionando
+- Produtos, fotos, descrição e ingredientes
+- Tamanhos personalizados, sem limitar a P/M/G
+- Adicionais
+- Escolha obrigatória de tamanho quando houver
+- Disponível/indisponível
+- Loja aberta/fechada
+- Nome, slogan, logo e banner vindos do Supabase
+- Instagram e WhatsApp configuráveis
+
+2. CARRINHO
+- Tamanho preservado
+- Adicionais preservados
+- Quantidade
+- Subtotal de cada item
+- Alterar/remover item
+- Total correto
+- Tamanho e adicionais permanecem separados
+
+3. CHECKOUT
+- Entrega ou retirada
+- Endereço
+- Observações
+- Pix
+- Cartão
+- Dinheiro
+- Troco
+- Cupom
+- Fidelidade
+- Taxa de entrega
+- Validações conforme as configurações da loja
+
+4. PEDIDO
+O pedido precisa chegar completo ao Supabase:
+produto → tamanho → adicionais → quantidade → preço → subtotal → desconto → taxa → total → pagamento → cliente → endereço → observação
+Depois deve aparecer corretamente no ADM, sem perder dados entre cardápio, carrinho, checkout, Supabase e ADM.
+
+5. WHATSAPP
+Mensagem organizada com:
+número do pedido, cliente, telefone, entrega/retirada, endereço, produtos, tamanhos, adicionais, valores, desconto, taxa, total, pagamento e observação.
+Usar o WhatsApp configurado para a loja.
+
+6. ADM
+Manter a apresentação aprovada e acrescentar:
+- edição completa dos produtos
+- tamanhos sem limite de P/M/G
+- adicionais
+- fotos
+- categorias
+- pedidos
+- alteração de status
+- clientes
+- promoções
+- fidelidade
+- configurações
+- WhatsApp
+- Instagram
+- entrega
+- dashboard com números reais
+
+7. ACOMPANHAMENTO
+Novo → Aceito → Em preparo → Saiu para entrega / Pronto para retirada → Entregue
+O cancelamento também deve ser tratado pelo sistema.
+
+8. FIDELIDADE
+Regra: 10 compras = 1 pastel grátis.
+Manter controle de compras, benefícios, clientes e aplicação da regra.
+
+9. ENTREGA
+Preparar a estrutura para as regras de entrega definidas.
+Não inventar API de mapas.
+GPS sozinho não é cálculo de distância por estrada.
+Para distância real por estrada, usar somente uma solução de rotas realmente disponível.
+Respeitar as configurações existentes da loja.
+
+REGRAS GERAIS
+- Não criar outro projeto Supabase.
+- Não apagar tabelas existentes.
+- Não inventar campos/tabelas sem verificar.
+- Não reutilizar o projeto antigo como base.
+- Não deixar scripts duplicados ou conflitantes.
+- Não criar números falsos no dashboard.
+- Preservar a apresentação atual.
+- Integrar ADM → Supabase → cliente.
