@@ -1,33 +1,52 @@
-# Pastelaria El Shaddai — reconstrução dos arquivos
+# Pastelaria El Shaddai — pacote completo de continuidade
 
-Este pacote reconstrói os arquivos do projeto existente, sem criar outro Supabase e sem alterar a estrutura do banco.
+Este pacote continua o projeto existente `PastelariaElshaddai/Site-El-Shaddai`.
+Não usa o repositório antigo e não cria outro projeto Supabase.
 
-## Projeto utilizado
-- Supabase: `qjwojyxfktabdkbiryfx`
-- URL: `https://qjwojyxfktabdkbiryfx.supabase.co`
-- Repositório previsto: `Site-El-Shaddai`
-
-## Arquivos
-- `index.html` — cardápio
-- `pedido.html` — carrinho e checkout
-- `acompanhar.html` — acompanhamento
-- `admin.html` — administração
-- `script.js` — cliente, carrinho, checkout, pedido e acompanhamento
-- `admin.js` — dashboard e CRUDs administrativos
-- `style.css` / `admin.css`
-- `supabase.js`
-- `Logo.png` deve ser colocado na raiz do repositório, respeitando maiúsculas/minúsculas.
+## O que foi integrado
+- Cardápio dinâmico pelo Supabase.
+- Categorias, busca, produtos, fotos, descrição e ingredientes.
+- Tamanhos personalizados e adicionais.
+- Carrinho com quantidade, edição, remoção e subtotais.
+- Checkout com entrega/retirada, pagamentos configuráveis, troco, cupom, fidelidade e taxa fixa de entrega.
+- Pedido completo salvo na tabela `pedidos` usando os campos existentes e `itens` JSONB.
+- Cadastro/atualização do cliente e controle de fidelidade.
+- WhatsApp com pedido, itens, valores e link direto de acompanhamento.
+- Acompanhamento do pedido por `acompanhar.html?id=NUMERO`.
+- ADM com dashboard de números reais, pedidos, aceitar/rejeitar, produtos, categorias, clientes, promoções e configurações.
+- Botão rápido de abrir/fechar a loja no topo do ADM.
+- Status aberto/fechado visível no cliente.
+- Horários configuráveis no ADM e bloqueio de novos pedidos fora do horário.
+- Configurações de entrega: taxa fixa, pedido mínimo e frete grátis por valor.
+- Preservação da identidade visual em tons creme/marrom já usada no projeto.
 
 ## Banco
-O pacote foi montado contra as tabelas existentes verificadas no Supabase:
+Projeto Supabase existente: `qjwojyxfktabdkbiryfx`.
+
+Foi aplicada uma única migração de suporte, sem criar tabelas:
+- `configuracoes_loja.configuracoes_extras` — JSONB para horários e regras de entrega.
+- `clientes.fidelidade` — JSONB para benefícios de fidelidade.
+
+As tabelas existentes continuam sendo:
 `categorias`, `produtos`, `clientes`, `pedidos`, `configuracoes_loja`, `promocoes`.
 
-Nenhuma tabela foi criada ou modificada por este pacote.
+## Logo
+O pacote NÃO substitui o `Logo.png` existente no repositório. Mantenha o arquivo real `Logo.png` na raiz do GitHub Pages, com L maiúsculo e P maiúsculo.
 
-## Importante
-As políticas RLS existentes permitem operações anon no estado verificado do banco. O pacote usa somente a chave pública/publishable e nunca usa service_role.
+## Arquivos principais
+- `index.html`
+- `pedido.html`
+- `acompanhar.html`
+- `admin.html`
+- `script.js`
+- `admin.js`
+- `style.css`
+- `admin.css`
+- `supabase.js` (mantido sem alteração)
 
-## Limites conscientes
-A estrutura atual do banco não possui colunas específicas para todas as futuras regras de entrega, estatísticas, fidelidade avançada e horários. Por isso este pacote não inventa essas colunas. O pedido guarda tamanho, adicionais, subtotal do item e dados de checkout dentro de `itens`/campos existentes.
+## Publicação
+Use estes arquivos na branch `melhorias-adm-completo` e depois abra um Pull Request para `main`.
+Não apague `Logo.png` nem `supabase.js`.
 
-Antes de publicar, substitua/adicione `Logo.png` se ele não estiver no repositório.
+## Observação de entrega
+A taxa desta versão é fixa. GPS/Haversine não é apresentado como distância por estrada e nenhuma API de mapas foi inventada.
