@@ -1,1 +1,59 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADM — Pastelaria El Shaddai</title><link rel="stylesheet" href="admin.css"></head><body><header><div class="brand"><img src="Logo.png"><span><b>Pastelaria El Shaddai</b><small>Administração</small></span></div><div class="top"><button id="toggle">Carregando...</button><span id="db">Verificando...</span><a href="index.html">Cliente</a></div></header><main><nav id="tabs"><button data-t="dashboard">Dashboard</button><button data-t="pedidos">Pedidos</button><button data-t="produtos">Produtos</button><button data-t="categorias">Categorias</button><button data-t="clientes">Clientes</button><button data-t="promocoes">Promoções</button><button data-t="fidelidade">Fidelidade</button><button data-t="loja">Loja</button></nav><section id="dashboard" class="tab active"></section><section id="pedidos" class="tab"></section><section id="produtos" class="tab"></section><section id="categorias" class="tab"></section><section id="clientes" class="tab"></section><section id="promocoes" class="tab"></section><section id="fidelidade" class="tab"></section><section id="loja" class="tab"></section></main><div id="toast"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase.js"></script><script src="admin.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0e9f4b">
+<title>ADM — Pastelaria El Shaddai</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-app">
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-brand">
+<img src="Logo.png" alt="Pastelaria El Shaddai">
+<div><strong>Pastelaria<br>El Shaddai</strong><small>Administração</small></div>
+<button id="sidebarClose" class="sidebar-close" type="button">×</button>
+</div>
+<button id="quickStoreToggle" class="store-toggle" type="button"><span class="toggle-dot"></span><span id="quickStoreText">Verificando loja...</span></button>
+<nav class="side-nav">
+<button class="nav-item" data-tab="dashboard">⌂ <span>Dashboard</span></button>
+<button class="nav-item active" data-tab="pedidos">▣ <span>Pedidos</span><b id="pendingBadge" hidden>0</b></button>
+<button class="nav-item" data-tab="produtos">◈ <span>Cardápio</span></button>
+<button class="nav-item" data-tab="categorias">◫ <span>Categorias</span></button>
+<button class="nav-item" data-tab="clientes">♙ <span>Clientes</span></button>
+<button class="nav-item" data-tab="promocoes">％ <span>Promoções</span></button>
+<button class="nav-item" data-tab="fidelidade">♕ <span>Fidelidade</span></button>
+<div class="nav-divider"></div>
+<button class="nav-item" data-tab="loja">▤ <span>Loja</span></button>
+<button class="nav-item" data-tab="entrega">⌁ <span>Taxa e Entrega</span></button>
+<button class="nav-item" data-tab="whatsapp">◉ <span>WhatsApp</span></button>
+<button class="nav-item" data-tab="configuracoes">⚙ <span>Configurações</span></button>
+</nav>
+<div class="sidebar-bottom"><a href="index.html" class="client-link">↗ Abrir cardápio</a></div>
+</aside>
+<main class="admin-main">
+<header class="topbar">
+<button id="sidebarOpen" class="menu-button" type="button">☰</button>
+<div class="top-title"><strong id="pageTitle">Pedidos de Hoje</strong><span id="pageSubtitle">Acompanhe a fila de produção em tempo real.</span></div>
+<div class="top-actions"><span id="statusDb" class="db-status">Verificando conexão...</span><button id="topStoreToggle" class="top-store-toggle" type="button">● Loja</button></div>
+</header>
+<section id="dashboard" class="admin-tab"></section>
+<section id="pedidos" class="admin-tab active"></section>
+<section id="produtos" class="admin-tab"></section>
+<section id="categorias" class="admin-tab"></section>
+<section id="clientes" class="admin-tab"></section>
+<section id="promocoes" class="admin-tab"></section>
+<section id="fidelidade" class="admin-tab"></section>
+<section id="loja" class="admin-tab"></section>
+<section id="entrega" class="admin-tab"></section>
+<section id="whatsapp" class="admin-tab"></section>
+<section id="configuracoes" class="admin-tab"></section>
+</main>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

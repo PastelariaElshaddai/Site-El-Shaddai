@@ -1,6 +1,112 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pastelaria El Shaddai</title><link rel="stylesheet" href="style.css"></head><body>
-<header><a class="brand" href="index.html"><img id="logo" src="Logo.png"><span><b id="nome">Pastelaria El Shaddai</b><small id="slogan">Feito a dois, no ponto pra você!</small></span></a><div class="actions"><span id="status">Carregando</span><a href="pedido.html">Carrinho <b id="count">0</b></a></div></header>
-<section class="hero"><img id="banner"><div><span id="heroStatus">●</span><h1 id="title">Cardápio</h1><p id="info"></p><b id="hours"></b></div></section>
-<main><div id="closed" class="closed"></div><input id="search" placeholder="Pesquisar produto..."><nav id="cats"></nav><section id="products"></section></main>
-<div id="modal" class="modal"><div class="modalbox"><button id="close">×</button><div id="modalBody"></div></div></div><div id="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase.js"></script><script src="script.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#7b1e1e">
+  <title>Pastelaria El Shaddai</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="index.html" aria-label="Início">
+        <img id="storeLogo" src="Logo.png" alt="Logo da Pastelaria El Shaddai">
+        <div class="brand-text">
+          <strong id="storeName">Pastelaria El Shaddai</strong>
+          <span id="storeSlogan">Feito a dois, no ponto pra você!</span>
+        </div>
+      </a>
+
+      <div class="header-actions">
+        <span id="storeStatus" class="store-status">Verificando...</span>
+        <a id="instagramLink" class="icon-btn" href="#" target="_blank" rel="noopener" hidden>Instagram</a>
+        <a class="cart-btn" href="pedido.html">
+          <span>🛒</span>
+          <span>Pedido</span>
+          <b id="cartCount">0</b>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <img id="storeBanner" src="" alt="Banner da Pastelaria El Shaddai" hidden>
+      <div class="hero-overlay">
+        <div class="hero-content">
+          <span id="heroStatus" class="hero-status">Verificando horário...</span>
+          <h1 id="heroName">Pastelaria El Shaddai</h1>
+          <p id="heroSlogan">Feito a dois, no ponto pra você!</p>
+          <p id="openingHours" class="opening-hours"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="shop-info">
+      <div>
+        <strong id="statusTitle">Status da loja</strong>
+        <span id="statusMessage">Verificando...</span>
+      </div>
+      <div id="shopInfoText"></div>
+    </section>
+
+    <section class="menu-wrap">
+      <div class="search-box">
+        <input id="searchInput" type="search" placeholder="Buscar produto..." autocomplete="off">
+      </div>
+
+      <div id="categoryChips" class="category-chips"></div>
+
+      <div id="menuMessage" class="menu-message" hidden></div>
+      <div id="productsGrid" class="products-grid"></div>
+    </section>
+  </main>
+
+  <div id="productModal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card">
+      <button class="modal-close" type="button" data-close-modal aria-label="Fechar">×</button>
+
+      <img id="modalPhoto" class="modal-photo" src="" alt="" hidden>
+
+      <div class="modal-body">
+        <span id="modalCategory" class="product-category"></span>
+        <h2 id="modalName"></h2>
+        <p id="modalDescription"></p>
+        <p id="modalIngredients" class="ingredients"></p>
+
+        <div id="sizeBox" class="option-box" hidden>
+          <h3>Tamanho</h3>
+          <div id="sizeOptions"></div>
+        </div>
+
+        <div id="additionalBox" class="option-box" hidden>
+          <h3>Adicionais</h3>
+          <div id="additionalOptions"></div>
+        </div>
+
+        <div class="quantity-row">
+          <strong>Quantidade</strong>
+          <div class="quantity-control">
+            <button id="qtyMinus" type="button">−</button>
+            <span id="qtyValue">1</span>
+            <button id="qtyPlus" type="button">+</button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <strong id="modalPrice">R$ 0,00</strong>
+          <button id="addToCartBtn" class="primary-btn" type="button">Adicionar ao pedido</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
