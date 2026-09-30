@@ -1,102 +1,19 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Meu Pedido — Pastelaria El Shaddai</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<header class="site-header">
-  <div class="header-inner">
-    <a class="brand" href="index.html">
-      <img id="storeLogo" src="Logo.png" alt="Logo">
-      <div class="brand-text"><strong id="storeName">Pastelaria El Shaddai</strong><span id="storeSlogan">Feito a dois, no ponto pra você!</span></div>
-    </a>
-    <a class="cart-btn" href="index.html">← Cardápio</a>
-  </div>
-</header>
-
-<main class="menu-wrap" style="max-width:900px">
-  <div class="panel" style="background:#fff;border:1px solid #e7e9ec;border-radius:12px;padding:20px">
-    <h1 style="margin-top:0">Seu pedido</h1>
-    <div id="cartArea"></div>
-  </div>
-
-  <div class="panel" style="background:#fff;border:1px solid #e7e9ec;border-radius:12px;padding:20px;margin-top:16px">
-    <h2>Finalizar pedido</h2>
-    <form id="checkoutForm" class="form-grid">
-      <div class="field"><label>Nome</label><input id="nome" required></div>
-      <div class="field"><label>Telefone</label><input id="telefone" required></div>
-      <div class="field"><label>Tipo</label><select id="tipo"><option value="entrega">Entrega</option><option value="retirada">Retirada</option></select></div>
-      <div class="field"><label>Pagamento</label><select id="pagamento"><option value="pix">Pix</option><option value="cartao">Cartão</option><option value="dinheiro">Dinheiro</option></select></div>
-      <div class="field full"><label>Endereço</label><textarea id="endereco" placeholder="Informe o endereço para entrega"></textarea></div>
-      <div class="field"><label>Troco para</label><input id="troco" type="number" step="0.01" placeholder="Somente dinheiro"></div>
-      <div class="field"><label>Cupom</label><input id="cupom" placeholder="Código do cupom"></div>
-      <div class="field full"><label>Observações</label><textarea id="observacao" placeholder="Alguma observação?"></textarea></div>
-      <div class="field full"><button class="primary-btn" type="submit">Enviar pedido</button></div>
-    </form>
-    <p id="checkoutMessage" style="color:#777;font-size:13px"></p>
-  </div>
-</main>
-
-<div id="toast" class="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase.js"></script>
-<script>
-const db=window.supabaseClient;
-const KEY="elshaddai_carrinho_v1";
-const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-let cart=JSON.parse(localStorage.getItem(KEY)||"[]"), config=null, promos=[];
-
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#b71c1c"><title>Meu Pedido — Pastelaria El Shaddai</title><link rel="stylesheet" href="style.css"></head><body>
+<header class="site-header"><div class="header-inner"><a class="brand" href="index.html"><img id="storeLogo" src="Logo.png" alt="Logo"><div class="brand-text"><strong id="storeName">Pastelaria El Shaddai</strong><span id="storeSlogan">Feito a dois, no ponto pra você!</span></div></a><a class="cart-btn" href="index.html">← Cardápio</a></div></header>
+<main class="menu-wrap" style="max-width:900px"><div id="closedNotice"></div><section class="panel"><h1 style="margin-top:0;color:#b71c1c">Seu pedido</h1><div id="cartArea"></div></section><section class="panel"><h2 style="color:#b71c1c">Finalizar pedido</h2><form id="checkoutForm" class="form-grid"><div class="field"><label>Nome</label><input id="nome" required></div><div class="field"><label>Telefone</label><input id="telefone" inputmode="tel" required></div><div class="field"><label>Tipo</label><select id="tipo"><option value="entrega">Entrega</option><option value="retirada">Retirada</option></select></div><div class="field"><label>Pagamento</label><select id="pagamento"></select></div><div class="field full"><label>Endereço</label><textarea id="endereco" placeholder="Informe o endereço para entrega"></textarea></div><div class="field"><label>Troco para</label><input id="troco" type="number" step="0.01" min="0" placeholder="Somente dinheiro"></div><div class="field"><label>Cupom</label><input id="cupom" placeholder="Código do cupom"></div><div class="field full" id="loyaltyBox" hidden><label><input id="useLoyalty" type="checkbox"> Usar 1 benefício de fidelidade (1 pastel grátis)</label></div><div class="field full"><label>Observações</label><textarea id="observacao" placeholder="Alguma observação?"></textarea></div><div class="field full"><div id="checkoutSummary" class="cart-summary"></div></div><div class="field full"><button id="submitOrder" class="primary-btn" type="submit">Enviar pedido pelo WhatsApp</button></div></form><p id="checkoutMessage"></p></section></main>
+<div id="toast" class="toast"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase.js"></script><script>
+const db=window.supabaseClient,KEY='elshaddai_carrinho_v2';let cart=[],config={},promos=[],client=null;const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));const ex=()=>config.configuracoes_extras||{};
+function load(){try{cart=JSON.parse(localStorage.getItem(KEY)||'[]')}catch{cart=[]}}
 function save(){localStorage.setItem(KEY,JSON.stringify(cart))}
-function render(){
- const e=document.getElementById("cartArea");
- if(!cart.length){e.innerHTML='<div class="empty-card"><strong>Seu pedido está vazio</strong><p>Volte ao cardápio para escolher seus produtos.</p><a class="primary-btn" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">Ver cardápio</a></div>';return}
- let total=cart.reduce((a,i)=>a+Number(i.subtotal||i.preco||0)*Number(i.quantidade||1),0);
- e.innerHTML=cart.map((i,n)=>`<div style="padding:14px 0;border-bottom:1px solid #eee"><div style="display:flex;justify-content:space-between;gap:10px"><strong>${esc(i.nome)}</strong><strong>${money(Number(i.subtotal||i.preco||0)*Number(i.quantidade||1))}</strong></div><small>${i.tamanho?esc(i.tamanho)+" · ":""}${i.adicionais?.length?esc(Array.isArray(i.adicionais)?i.adicionais.join(", "):i.adicionais):""}</small><div style="display:flex;align-items:center;gap:8px;margin-top:9px"><button class="secondary-btn" type="button" onclick="qty(${n},-1)">−</button><span>${i.quantidade||1}</span><button class="secondary-btn" type="button" onclick="qty(${n},1)">+</button><button class="danger-btn" type="button" onclick="removeItem(${n})">Remover</button></div></div>`).join("")+`<div style="display:flex;justify-content:space-between;padding-top:16px;font-size:18px"><strong>Total</strong><strong>${money(total)}</strong></div>`;
-}
-function qty(n,d){cart[n].quantidade=Math.max(1,Number(cart[n].quantidade||1)+d);cart[n].subtotal=Number(cart[n].preco||0)*cart[n].quantidade;save();render()}
-function removeItem(n){cart.splice(n,1);save();render()}
-async function start(){
- if(!db)return;
- const c=await db.from("configuracoes_loja").select("*").limit(1).maybeSingle();config=c.data||{};
- if(config.loja_aberta===false){document.getElementById("checkoutMessage").textContent="A loja está fechada no momento. O pedido não pode ser enviado.";document.querySelector("#checkoutForm button").disabled=true}
- const p=await db.from("promocoes").select("*").eq("ativo",true);promos=p.data||[];
- if(config.nome_loja)document.getElementById("storeName").textContent=config.nome_loja;
- if(config.slogan)document.getElementById("storeSlogan").textContent=config.slogan;
- if(config.logo)document.getElementById("storeLogo").src=config.logo;
- render();
-}
-document.getElementById("tipo").onchange=e=>document.getElementById("endereco").required=e.target.value==="entrega";
-document.getElementById("checkoutForm").onsubmit=async e=>{
- e.preventDefault();
- if(!cart.length)return;
- if(config?.loja_aberta===false)return;
- const tipo=document.getElementById("tipo").value;
- const endereco=document.getElementById("endereco").value.trim();
- if(tipo==="entrega"&&!endereco){document.getElementById("endereco").focus();return}
- const pay=document.getElementById("pagamento").value;
- const coupon=document.getElementById("cupom").value.trim().toUpperCase();
- const promo=promos.find(p=>String(p.codigo).toUpperCase()===coupon);
- let subtotal=cart.reduce((a,i)=>a+Number(i.subtotal||i.preco||0)*Number(i.quantidade||1),0);
- let desconto=promo?subtotal*Number(promo.desconto||0)/100:0;
- const ex=config?.configuracoes_extras||{},fee=tipo==="entrega"?Number(ex?.entrega?.taxa_fixa||0):0,total=Math.max(0,subtotal+fee-desconto);
- const itens=cart.map(i=>({...i,quantidade:Number(i.quantidade||1),subtotal:Number(i.subtotal||i.preco||0)*Number(i.quantidade||1)}));
- const obs=[document.getElementById("observacao").value.trim(),promo?`Cupom ${promo.codigo}: -${money(desconto)}`:"",`Subtotal: ${money(subtotal)}`,`Taxa de entrega: ${money(fee)}`,`Desconto: ${money(desconto)}`,`Troco para: ${pay==="dinheiro"?money(document.getElementById("troco").value):"Não se aplica"}`].filter(Boolean).join(" | ");
- const payload={cliente_nome:document.getElementById("nome").value.trim(),cliente_telefone:document.getElementById("telefone").value.trim(),endereco,tipo,pagamento:pay,observacao:obs,itens,total,status:"novo"};
- const r=await db.from("pedidos").insert(payload).select("id").single();
- if(r.error){document.getElementById("checkoutMessage").textContent=r.error.message;return}
- const id=r.data.id;
- const phone=String(config?.whatsapp||"").replace(/\D/g,"");
- const base=location.href.replace(/pedido\.html.*$/,"");
- const track=base+"acompanhar.html?id="+encodeURIComponent(id);
- const msg=`*Pedido #${id} — ${config?.nome_loja||"Pastelaria El Shaddai"}*%0ACliente: ${encodeURIComponent(payload.cliente_nome)}%0ATelefone: ${encodeURIComponent(payload.cliente_telefone)}%0ATipo: ${tipo}%0A${encodeURIComponent(endereco?"Endereço: "+endereco:"")}%0A%0A${encodeURIComponent(itens.map(i=>`${i.quantidade}x ${i.nome}${i.tamanho?" ("+i.tamanho+")":""} — ${money(i.subtotal)}`).join("\n"))}%0A%0ASubtotal: ${money(subtotal)}%0ATaxa: ${money(fee)}%0ADesconto: ${money(desconto)}%0ATotal: ${money(total)}%0APagamento: ${pay}%0A${encodeURIComponent(track)}`;
- localStorage.removeItem(KEY);cart=[];
- window.location.href=phone?`https://wa.me/${phone}?text=${msg}`:`acompanhar.html?id=${encodeURIComponent(id)}`;
-};
+async function findClient(){const tel=document.getElementById('telefone').value.trim();if(!tel||!db)return null;const r=await db.from('clientes').select('*').eq('telefone',tel).limit(1).maybeSingle();client=r.data||null;const b=Number(client?.fidelidade?.beneficios||0);document.getElementById('loyaltyBox').hidden=b<1;return client}
+function totals(){const subtotal=cart.reduce((a,i)=>a+Number(i.preco||0)*Number(i.quantidade||1),0);const code=document.getElementById('cupom').value.trim().toUpperCase();const p=promos.find(x=>String(x.codigo).toUpperCase()===code&&x.ativo!==false&&(!x.validade||x.validade>=new Date().toISOString().slice(0,10)));const descontoCupom=p?subtotal*Number(p.desconto||0)/100:0;const useBenefit=document.getElementById('useLoyalty')?.checked&&Number(client?.fidelidade?.beneficios||0)>0;const benefit=useBenefit?Math.min(subtotal,cart.filter(i=>String(i.nome||'').toLowerCase().includes('pastel')).reduce((a,i)=>a+Number(i.preco||0)*Number(i.quantidade||1),0)||subtotal):0;const desconto=descontoCupom+benefit;const tipo=document.getElementById('tipo').value;const fee=tipo==='entrega'?Number(ex().entrega?.taxa_fixa||0):0;return{subtotal,desconto,descontoCupom,benefit,fee,total:Math.max(0,subtotal+fee-desconto),promo:p}}
+function render(){const box=document.getElementById('cartArea');if(!cart.length){box.innerHTML='<div class="empty-card"><strong>Seu pedido está vazio.</strong><p>Volte ao cardápio para escolher seus produtos.</p><a class="primary-btn" href="index.html">Ver cardápio</a></div>';document.getElementById('submitOrder').disabled=true;return}document.getElementById('submitOrder').disabled=config.loja_aberta===false;box.innerHTML=cart.map((i,n)=>`<div class="cart-line"><div><h3>${esc(i.nome)}</h3><small>${i.tamanho?esc(i.tamanho)+' · ':''}${Array.isArray(i.adicionais)&&i.adicionais.length?esc(i.adicionais.join(', ')):''}</small><div class="cart-actions"><button class="secondary-btn" type="button" onclick="qty(${n},-1)">−</button><b>${i.quantidade||1}</b><button class="secondary-btn" type="button" onclick="qty(${n},1)">+</button><button class="danger-btn" type="button" onclick="removeItem(${n})">Remover</button></div></div><strong>${money(Number(i.preco||0)*Number(i.quantidade||1))}</strong></div>`).join('');updateSummary()}
+function qty(n,d){cart[n].quantidade=Math.max(1,Number(cart[n].quantidade||1)+d);cart[n].subtotal=Number(cart[n].preco||0)*cart[n].quantidade;save();render()}function removeItem(n){cart.splice(n,1);save();render()}
+function updateSummary(){const t=totals();document.getElementById('checkoutSummary').innerHTML=`<div class="summary-row"><span>Subtotal</span><strong>${money(t.subtotal)}</strong></div><div class="summary-row"><span>Taxa de entrega</span><strong>${money(t.fee)}</strong></div><div class="summary-row"><span>Desconto</span><strong>-${money(t.desconto)}</strong></div><div class="summary-row total"><span>Total</span><strong>${money(t.total)}</strong></div>`}
+function setPayments(){const s=document.getElementById('pagamento'),opts=[['pix','Pix','pagamento_pix'],['cartao','Cartão','pagamento_cartao'],['dinheiro','Dinheiro','pagamento_dinheiro']].filter(x=>config[x[2]]!==false);s.innerHTML=opts.map(x=>`<option value="${x[0]}">${x[1]}</option>`).join('')||'<option value="">Nenhum pagamento habilitado</option>'}
+async function start(){load();if(!db)return;const c=await db.from('configuracoes_loja').select('*').limit(1).maybeSingle();config=c.data||{};const p=await db.from('promocoes').select('*').eq('ativo',true);promos=p.data||[];document.getElementById('storeName').textContent=config.nome_loja||'Pastelaria El Shaddai';document.getElementById('storeSlogan').textContent=config.slogan||'Feito a dois, no ponto pra você!';document.getElementById('storeLogo').src=config.logo||'Logo.png';setPayments();if(config.loja_aberta===false){document.getElementById('closedNotice').innerHTML='<div class="notice closed"><strong>Loja fechada.</strong> No momento não estamos aceitando novos pedidos.</div>'}document.getElementById('tipo').innerHTML='';if(config.entrega_ativa!==false)document.getElementById('tipo').insertAdjacentHTML('beforeend','<option value="entrega">Entrega</option>');if(config.retirada_ativa!==false)document.getElementById('tipo').insertAdjacentHTML('beforeend','<option value="retirada">Retirada</option>');if(!document.getElementById('tipo').options.length)document.getElementById('tipo').innerHTML='<option value="retirada">Retirada</option>';toggleAddress();render()}
+function toggleAddress(){const delivery=document.getElementById('tipo').value==='entrega';document.getElementById('endereco').required=delivery;document.getElementById('endereco').disabled=!delivery;updateSummary()}
+document.getElementById('tipo').onchange=()=>{toggleAddress();render()};document.getElementById('cupom').oninput=updateSummary;document.getElementById('useLoyalty').onchange=updateSummary;document.getElementById('telefone').addEventListener('blur',findClient);document.getElementById('pagamento').onchange=()=>{document.getElementById('troco').disabled=document.getElementById('pagamento').value!=='dinheiro'};
+document.getElementById('checkoutForm').onsubmit=async e=>{e.preventDefault();const msg=document.getElementById('checkoutMessage');msg.textContent='';if(!cart.length||config.loja_aberta===false)return;const nome=document.getElementById('nome').value.trim(),tel=document.getElementById('telefone').value.trim(),tipo=document.getElementById('tipo').value,end=document.getElementById('endereco').value.trim(),pay=document.getElementById('pagamento').value;if(!nome||!tel||(tipo==='entrega'&&!end))return msg.textContent='Preencha os campos obrigatórios.';const t=totals();const itens=cart.map(i=>({...i,quantidade:Number(i.quantidade||1),preco:Number(i.preco||0),subtotal:Number(i.preco||0)*Number(i.quantidade||1)}));const troco=pay==='dinheiro'?Number(document.getElementById('troco').value||0):0;const obs=[document.getElementById('observacao').value.trim(),t.promo?t.promo?`Cupom ${t.promo.codigo}: -${money(t.descontoCupom)}`:'',t.benefit?`Fidelidade: -${money(t.benefit)}`:'',`Subtotal: ${money(t.subtotal)}`,`Taxa de entrega: ${money(t.fee)}`,`Desconto: ${money(t.desconto)}`,pay==='dinheiro'?`Troco para: ${money(troco)}`:''].filter(Boolean).join(' | ');const r=await db.from('pedidos').insert({cliente_nome:nome,cliente_telefone:tel,endereco:end,tipo,pagamento:pay,observacao:obs,itens,total:t.total,status:'novo'}).select('id').single();if(r.error){msg.textContent=r.error.message;return}const id=r.data.id;const existing=await db.from('clientes').select('*').eq('telefone',tel).limit(1).maybeSingle();if(existing.data){const oldF=existing.data.fidelidade||{},oldPurch=Number(oldF.compras||existing.data.quantidade_pedidos||0),oldBen=Number(oldF.beneficios||0),used=t.benefit>0?1:0,newPurch=oldPurch+1,newBen=Math.max(0,oldBen-used)+(newPurch%10===0?1:0);await db.from('clientes').update({nome,endereco:tipo==='entrega'?end:existing.data.endereco,quantidade_pedidos:Number(existing.data.quantidade_pedidos||0)+1,total_gasto:Number(existing.data.total_gasto||0)+t.total,fidelidade:{...oldF,compras:newPurch,beneficios:newBen}}).eq('id',existing.data.id)}else{await db.from('clientes').insert({nome,telefone:tel,endereco:tipo==='entrega'?end:'',quantidade_pedidos:1,total_gasto:t.total,fidelidade:{compras:1,beneficios:0}})}const track=`${location.origin}${location.pathname.replace(/pedido\.html$/,'')}acompanhar.html?id=${encodeURIComponent(id)}`;const lines=itens.map(i=>`${i.quantidade}x ${i.nome}${i.tamanho?' ('+i.tamanho+')':''}${i.adicionais?.length?' + '+i.adicionais.join(', '):''} — ${money(i.subtotal)}`).join('\n');const text=`Pedido #${id} — ${config.nome_loja||'Pastelaria El Shaddai'}\nCliente: ${nome}\nTelefone: ${tel}\nTipo: ${tipo}\n${end?'Endereço: '+end+'\n':''}\n${lines}\n\nSubtotal: ${money(t.subtotal)}\nTaxa: ${money(t.fee)}\nDesconto: ${money(t.desconto)}\nTotal: ${money(t.total)}\nPagamento: ${pay}${pay==='dinheiro'?`\nTroco para: ${money(troco)}`:''}\n${document.getElementById('observacao').value.trim()?`Observação: ${document.getElementById('observacao').value.trim()}\n`:''}\nAcompanhar pedido: ${track}`;save();localStorage.removeItem(KEY);const phone=String(config.whatsapp||'').replace(/\D/g,'');location.href=phone?`https://wa.me/${phone}?text=${encodeURIComponent(text)}`:track};
 start();
-</script>
-</body>
-</html>
+</script></body></html>

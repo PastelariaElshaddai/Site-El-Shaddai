@@ -1,17 +1,19 @@
-PASTELARIA EL SHADDAI — PACOTE INTEGRADO
+PASTELARIA EL SHADDAI — PACOTE CORRIGIDO
 
-Base visual: tema claro vermelho + amarelo/dourado, preservando a apresentação do cliente e do ADM.
+Este pacote é para a branch melhorias-adm-completo.
 
-Arquivos:
-index.html / style.css / script.js = cardápio cliente
-pedido.html = carrinho e checkout
-acompanhar.html = acompanhamento do pedido
-admin.html / admin.css / admin.js = ADM
-supabase.js = conexão com o projeto Supabase existente
+Preserva a identidade visual clara vermelho + amarelo/dourado e a conexão com o Supabase existente.
+Inclui:
+- cardápio dinâmico pelo Supabase
+- categorias e busca
+- tamanhos ilimitados e adicionais
+- carrinho persistente
+- checkout com entrega/retirada, pagamentos, cupom e taxa
+- pedido salvo no Supabase
+- atualização básica do cliente
+- WhatsApp com link de acompanhamento
+- acompanhamento de status
+- ADM com pedidos, dashboard real, produtos com edição completa, categorias, clientes, promoções, fidelidade, loja, entrega, WhatsApp e pagamentos
 
-IMPORTANTE:
-- Não criar outro projeto Supabase.
-- Não apagar tabelas.
-- Não alterar a chave/URL de supabase.js.
-- Logo esperada: Logo.png (maiúsculas/minúsculas importam no GitHub Pages).
-- Subir estes arquivos na branch melhorias-adm-completo.
+NÃO substituir Logo.png por outro arquivo.
+NÃO criar outro projeto Supabase.
