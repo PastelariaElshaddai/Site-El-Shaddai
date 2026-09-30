@@ -1,0 +1,11 @@
+PASTELARIA EL SHADDAI — INTEGRAÇÃO FINAL
+
+Substitua no GitHub os arquivos: admin.html, admin.js, supabase.js, index.html, script.js e catalogo.js.
+
+No Supabase, a coluna tamanhos já deve existir conforme BLOCO_TAMANHOS_SQL.sql.
+
+Esta versão corrige a inicialização do Supabase no painel e inclui tamanhos com preço por tamanho no cadastro e no cardápio do cliente.
+
+Após o upload no GitHub, aguarde a publicação do GitHub Pages e abra o endereço do administrativo. O indicador deve mostrar "Conectado".
+
+Não substitua pedido.html.
