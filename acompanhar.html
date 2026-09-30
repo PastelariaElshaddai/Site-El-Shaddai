@@ -1,5 +1,77 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Acompanhar pedido</title><link rel="stylesheet" href="style.css"></head>
-<body><header class="topbar"><a class="brand" href="index.html"><img id="logoAcompanhar" src="Logo.png" alt="Logo"><span><strong id="nomeLojaAcompanhar">Pastelaria El Shaddai</strong><small>Acompanhar pedido</small></span></a><a class="back" href="index.html">← Cardápio</a></header>
-<main class="container narrow"><section class="panel"><h1>Acompanhar pedido</h1><p>Informe o número do pedido para acompanhar o andamento.</p><div class="form-row"><input id="pedidoId" type="number" placeholder="Número do pedido"><button id="buscarPedido" class="primary">Consultar</button></div><div id="resultado"></div></section></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase.js"></script><script src="script.js"></script></body></html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Acompanhar pedido — Pastelaria El Shaddai</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <img id="storeLogo" src="Logo.png" alt="Logo">
+      <div class="brand-text"><strong id="storeName">Pastelaria El Shaddai</strong><span id="storeSlogan">Feito a dois, no ponto pra você!</span></div>
+    </a>
+    <a class="cart-btn" href="index.html">Cardápio</a>
+  </div>
+</header>
+
+<main class="menu-wrap" style="max-width:760px">
+  <div class="panel" style="background:#fff;border:1px solid #e7e9ec;border-radius:12px;padding:22px">
+    <h1>Acompanhar pedido</h1>
+    <p id="orderNumber" style="color:#777">Carregando pedido...</p>
+    <div id="statusBox"></div>
+    <div id="orderDetails" style="margin-top:22px"></div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script>
+const db=window.supabaseClient;
+const id=new URLSearchParams(location.search).get("id");
+const labels={
+ novo:"Novo",
+ aceito:"Aceito",
+ "em preparo":"Em preparo",
+ "saiu para entrega":"Saiu para entrega",
+ "pronto para retirada":"Pronto para retirada",
+ entregue:"Entregue",
+ cancelado:"Cancelado"
+};
+const steps=["novo","aceito","em preparo","saiu para entrega","entregue"];
+
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function money(v){return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+
+async function load(){
+ if(!db||!id){document.getElementById("orderNumber").textContent="Pedido não encontrado.";return}
+ const c=await db.from("configuracoes_loja").select("*").limit(1).maybeSingle();
+ if(c.data){
+   if(c.data.nome_loja)document.getElementById("storeName").textContent=c.data.nome_loja;
+   if(c.data.slogan)document.getElementById("storeSlogan").textContent=c.data.slogan;
+   if(c.data.logo)document.getElementById("storeLogo").src=c.data.logo;
+ }
+ const r=await db.from("pedidos").select("*").eq("id",id).maybeSingle();
+ if(r.error||!r.data){document.getElementById("orderNumber").textContent="Pedido não encontrado.";return}
+ render(r.data);
+}
+function render(o){
+ const status=o.status||"novo";
+ document.getElementById("orderNumber").textContent=`Pedido #${o.id}`;
+ if(status==="cancelado"){
+   document.getElementById("statusBox").innerHTML=`<div style="padding:18px;border-radius:12px;background:#fff1f1;color:#b42318"><strong>Pedido cancelado</strong><p style="margin-bottom:0">Entre em contato com a loja se precisar de ajuda.</p></div>`;
+ }else{
+   const current=steps.indexOf(status);
+   document.getElementById("statusBox").innerHTML=`<div style="display:grid;gap:9px">${steps.map((s,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:11px;border:1px solid #eee;border-radius:10px;opacity:${i<=current?1:.45}"><span style="font-size:18px">${i<=current?"✓":"○"}</span><strong>${labels[s]}</strong></div>`).join("")}</div>`;
+   if(status==="pronto para retirada")document.getElementById("statusBox").innerHTML+=`<div style="margin-top:10px;padding:12px;border-radius:10px;background:#fff8e8"><strong>Seu pedido está pronto para retirada.</strong></div>`;
+ }
+ const itens=Array.isArray(o.itens)?o.itens:[];
+ document.getElementById("orderDetails").innerHTML=`<h2>Resumo</h2><p><strong>Cliente:</strong> ${esc(o.cliente_nome)}</p><p><strong>Tipo:</strong> ${esc(o.tipo)}</p>${o.endereco?`<p><strong>Endereço:</strong> ${esc(o.endereco)}</p>`:""}<p><strong>Pagamento:</strong> ${esc(o.pagamento)}</p><div style="margin-top:15px">${itens.map(i=>`<div style="padding:10px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;gap:10px"><span>${i.quantidade||1}x ${esc(i.nome)}${i.tamanho?" · "+esc(i.tamanho):""}${i.adicionais?.length?" · "+esc(Array.isArray(i.adicionais)?i.adicionais.join(", "):i.adicionais):""}</span><strong>${money(i.subtotal||Number(i.preco||0)*Number(i.quantidade||1))}</strong></div>`).join("")}</div><div style="display:flex;justify-content:space-between;margin-top:15px;font-size:19px"><strong>Total</strong><strong>${money(o.total)}</strong></div>${o.observacao?`<p style="margin-top:15px"><strong>Observações:</strong> ${esc(o.observacao)}</p>`:""}`;
+}
+load();
+setInterval(load,15000);
+</script>
+</body>
+</html>
