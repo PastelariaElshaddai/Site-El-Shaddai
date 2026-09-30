@@ -63,7 +63,7 @@ async function loadCatalog(){
 }
 
 function renderCategories(){
-  const box = $("#categoryList") || $("#categories");
+  const box = $("#categoryChips") || $("#categoryList") || $("#categories");
   if(!box) return;
   box.innerHTML = `<button class="category-chip active" data-cat="">Todos</button>` +
     categories.map(c=>`<button class="category-chip" data-cat="${esc(c.nome)}">${esc(c.nome)}</button>`).join("");
