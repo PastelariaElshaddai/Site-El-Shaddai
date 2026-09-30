@@ -1,9 +1,168 @@
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])),money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}),KEY="elshaddai_carrinho_v3";let loja={},cats=[],products=[],cat="todos";
-const parse=v=>{try{return typeof v==="string"?JSON.parse(v):v||[]}catch{return[]}},sizes=v=>parse(v).filter(x=>x&&x.nome).map(x=>({nome:String(x.nome),preco:Number(x.preco||0)})),adds=v=>parse(v).filter(x=>x&&x.nome).map(x=>({nome:String(x.nome),preco:Number(x.preco||0)}));
-function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2500)}
-function openNow(){if(loja.loja_aberta===false)return false;const h=loja.configuracoes_extras?.horarios||{},k=["domingo","segunda","terca","quarta","quinta","sexta","sabado"][new Date().getDay()],d=h[k];if(!d||!d.ativo||!d.abertura||!d.fechamento)return true;const n=new Date(),m=n.getHours()*60+n.getMinutes(),p=x=>{const a=x.split(":");return +a[0]*60 + +a[1]},a=p(d.abertura),f=p(d.fechamento);return f>a?m>=a&&m<f:m>=a||m<f}
-async function init(){const [s,c,p]=await Promise.all([supabaseClient.from("configuracoes_loja").select("*").order("id").limit(1).maybeSingle(),supabaseClient.from("categorias").select("*").eq("ativo",true).order("nome"),supabaseClient.from("produtos").select("*").eq("ativo",true).eq("disponivel",true).order("nome")]);if(s.error||c.error||p.error)throw s.error||c.error||p.error;loja=s.data||{};cats=c.data||[];products=p.data||[];render()}
-function render(){const ok=openNow();$("#nome").textContent=loja.nome_loja||"Pastelaria El Shaddai";$("#slogan").textContent=loja.slogan||"Feito a dois, no ponto pra você!";$("#title").textContent=loja.nome_loja||"Cardápio";$("#info").textContent=loja.informacoes||"";if(loja.logo)$("#logo").src=loja.logo;if(loja.banner){$("#banner").src=loja.banner;$("#banner").style.display="block"}["#status","#heroStatus"].forEach(s=>{const e=$(s);e.textContent=ok?"● Loja aberta":"● Loja fechada";e.className=ok?"open":"closedStatus"});$("#closed").innerHTML=ok?"":`<b>Loja fechada.</b> Os pedidos estão bloqueados no momento.`;const h=loja.configuracoes_extras?.horarios||{},k=["domingo","segunda","terca","quarta","quinta","sexta","sabado"][new Date().getDay()],d=h[k];$("#hours").textContent=d?.ativo?`Hoje: ${d.abertura} às ${d.fechamento}`:"";$("#cats").innerHTML=[{id:"todos",nome:"Ver todos"},...cats].map(c=>`<button class="${String(cat)===String(c.id)?"active":""}" data-c="${c.id}">${esc(c.nome)}</button>`).join("");$$("[data-c]").forEach(b=>b.onclick=()=>{cat=b.dataset.c;renderProducts()});renderProducts();updateCount()}
-function renderProducts(){const q=$("#search").value.toLowerCase().trim(),c=cats.find(x=>String(x.id)===String(cat));const list=products.filter(p=>(cat==="todos"||String(p.categoria).toLowerCase()===String(c?.nome).toLowerCase()||String(p.categoria)===String(c?.id))&&(!q||[p.nome,p.descricao,p.categoria].join(" ").toLowerCase().includes(q)));$("#products").className="grid";$("#products").innerHTML=list.length?list.map(p=>{const s=sizes(p.tamanhos),price=s.length?Math.min(...s.map(x=>x.preco)):Number(p.preco||0);return `<article class="card"><img src="${esc(p.foto||"Logo.png")}" onerror="this.style.display='none'"><div><h3>${esc(p.nome)}</h3><p>${esc(p.descricao||"")}</p><div class="price">${money(price)}</div><button class="primary" ${openNow()?"":"disabled"} data-p="${p.id}">Escolher</button></div></article>`}).join(""):'<div class="empty">Nenhum produto encontrado.</div>';$$("[data-p]").forEach(b=>b.onclick=()=>modal(+b.dataset.p))}
-function modal(id){const p=products.find(x=>+x.id===id),s=sizes(p.tamanhos),a=adds(p.adicionais);$("#modalBody").innerHTML=`<h2>${esc(p.nome)}</h2><p>${esc(p.descricao||"")}</p>${s.length?`<b>Tamanho obrigatório</b>${s.map((x,i)=>`<label class="opt"><span><input type="radio" name="sz" value="${i}" ${i===0?"checked":""}> ${esc(x.nome)}</span><b>${money(x.preco)}</b></label>`).join("")}`:""}${a.length?`<b>Adicionais</b>${a.map((x,i)=>`<label class="opt"><span><input type="checkbox" name="ad" value="${i}"> ${esc(x.nome)}</span><b>+${money(x.preco)}</b></label>`).join("")}`:""}<div class="field"><label>Quantidade</label><input id="qty" type="number" min="1" value="1"></div><button id="add" class="primary">Adicionar</button>`;$("#modal").classList.add("show");$("#add").onclick=()=>{const si=s.length?Number($('input[name="sz"]:checked')?.value):-1;if(s.length&&si<0)return toast("Escolha o tamanho.");const ad=a.filter((_,i)=>$(`input[name="ad"][value="${i}"]`)?.checked),unit=Number(s[si]?.preco??p.preco||0)+ad.reduce((z,x)=>z+x.preco,0),q=Math.max(1,+$("#qty").value||1),c=parse(localStorage.getItem(KEY));c.push({product_id:p.id,nome:p.nome,q,tamanho:s[si]?.nome||"",adicionais:ad,unit,subtotal:unit*q});localStorage.setItem(KEY,JSON.stringify(c));updateCount();$("#modal").classList.remove("show");toast("Adicionado ao carrinho")}}
-function updateCount(){$("#count").textContent=parse(localStorage.getItem(KEY)).reduce((s,x)=>s+x.q,0)}$("#close").onclick=()=>$("#modal").classList.remove("show");$("#search").oninput=renderProducts;init().catch(e=>{console.error(e);toast("Erro ao carregar o cardápio")})
+const db = window.supabaseClient;
+const CART_KEY = "elshaddai_carrinho_v1";
+
+let config = {};
+let products = [];
+let categories = [];
+let cart = [];
+let selectedProduct = null;
+
+const $ = (s) => document.querySelector(s);
+const money = (v) => Number(v || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+
+function loadCart(){
+  try { cart = JSON.parse(localStorage.getItem(CART_KEY) || "[]"); }
+  catch { cart = []; }
+}
+function saveCart(){ localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
+function getExtras(p){ return Array.isArray(p?.adicionais) ? p.adicionais : []; }
+function getSizes(p){ return Array.isArray(p?.tamanhos) ? p.tamanhos : []; }
+
+async function loadStore(){
+  if(!db) return;
+  const r = await db.from("configuracoes_loja").select("*").limit(1).maybeSingle();
+  config = r.data || {};
+  applyStore();
+}
+function applyStore(){
+  const name = config.nome_loja || "Pastelaria El Shaddai";
+  const slogan = config.slogan || "Feito a dois, no ponto pra você!";
+  const logo = config.logo || "Logo.png";
+  document.querySelectorAll("#storeName").forEach(e=>e.textContent=name);
+  document.querySelectorAll("#storeSlogan").forEach(e=>e.textContent=slogan);
+  document.querySelectorAll("#storeLogo").forEach(e=>e.src=logo);
+
+  const open = config.loja_aberta !== false;
+  document.querySelectorAll("#storeStatus").forEach(e=>{
+    e.textContent=open ? "ABERTA" : "FECHADA";
+    e.classList.toggle("closed",!open);
+  });
+
+  const extra = config.configuracoes_extras || {};
+  const hours = extra.horarios || extra.horas || {};
+  const hoursText = extra.horario_exibicao || extra.horario || (
+    hours.abertura && hours.fechamento ? `${hours.abertura} às ${hours.fechamento}` : ""
+  );
+  document.querySelectorAll("#storeHours").forEach(e=>e.textContent=hoursText || "Consulte nossos horários");
+  const banner = config.banner;
+  const hero = document.querySelector("#storeBanner");
+  if(hero && banner) hero.src=banner;
+}
+
+async function loadCatalog(){
+  if(!db) return;
+  const [p,c] = await Promise.all([
+    db.from("produtos").select("*").eq("ativo",true).order("id"),
+    db.from("categorias").select("*").eq("ativo",true).order("id")
+  ]);
+  products = p.data || [];
+  categories = c.data || [];
+  renderCategories();
+  renderProducts(products);
+}
+
+function renderCategories(){
+  const box = $("#categoryList") || $("#categories");
+  if(!box) return;
+  box.innerHTML = `<button class="category-chip active" data-cat="">Todos</button>` +
+    categories.map(c=>`<button class="category-chip" data-cat="${esc(c.nome)}">${esc(c.nome)}</button>`).join("");
+  box.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{
+    box.querySelectorAll("[data-cat]").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    const cat=b.dataset.cat;
+    renderProducts(cat ? products.filter(p=>p.categoria===cat) : products);
+  });
+}
+
+function renderProducts(list){
+  const grid=$("#productGrid") || $("#productsGrid") || $("#products");
+  if(!grid)return;
+  if(!list.length){grid.innerHTML='<div class="empty-card">Nenhum produto encontrado.</div>';return}
+  grid.innerHTML=list.map(p=>{
+    const disabled=p.disponivel===false;
+    return `<article class="product-card ${disabled?"unavailable":""}">
+      ${p.foto?`<img src="${esc(p.foto)}" alt="${esc(p.nome)}">`:""}
+      <div class="product-card-body">
+        <small>${esc(p.categoria||"")}</small>
+        <h3>${esc(p.nome)}</h3>
+        <p>${esc(p.descricao||"")}</p>
+        ${p.ingredientes?.length?`<small>${esc(Array.isArray(p.ingredientes)?p.ingredientes.join(", "):p.ingredientes)}</small>`:""}
+        <strong>${priceLabel(p)}</strong>
+        <button class="primary-btn" ${disabled||config.loja_aberta===false?"disabled":""} onclick="openProduct(${p.id})">${disabled?"Indisponível":"Adicionar"}</button>
+      </div>
+    </article>`;
+  }).join("");
+}
+function priceLabel(p){
+  const s=getSizes(p);
+  if(s.length)return `A partir de ${money(Math.min(...s.map(x=>Number(x.preco||0))))}`;
+  return money(p.preco);
+}
+
+window.openProduct = function(id){
+  selectedProduct=products.find(p=>Number(p.id)===Number(id));
+  if(!selectedProduct)return;
+  let modal=$("#productModal");
+  if(!modal){
+    modal=document.createElement("div");modal.id="productModal";modal.className="modal";
+    document.body.appendChild(modal);
+  }
+  const sizes=getSizes(selectedProduct), extras=getExtras(selectedProduct);
+  modal.innerHTML=`<div class="modal-content">
+    <button class="modal-close" onclick="closeProduct()">×</button>
+    <h2>${esc(selectedProduct.nome)}</h2>
+    <p>${esc(selectedProduct.descricao||"")}</p>
+    ${sizes.length?`<label>Tamanho <select id="choiceSize" required>${sizes.map((s,i)=>`<option value="${i}">${esc(s.nome||s.tamanho||"Tamanho")} — ${money(s.preco)}</option>`).join("")}</select></label>`:""}
+    ${extras.length?`<div><strong>Adicionais</strong>${extras.map((x,i)=>`<label style="display:block;margin:8px 0"><input type="checkbox" class="choiceExtra" value="${i}"> ${esc(x.nome||x.titulo||x)} ${x.preco?`(+ ${money(x.preco)})`:""}</label>`).join("")}</div>`:""}
+    <label>Quantidade <input id="choiceQty" type="number" min="1" value="1"></label>
+    <button class="primary-btn" onclick="addSelected()">Adicionar ao carrinho</button>
+  </div>`;
+  modal.style.display="flex";
+}
+window.closeProduct=function(){const m=$("#productModal");if(m)m.style.display="none"}
+
+window.addSelected=function(){
+  if(!selectedProduct)return;
+  const sizes=getSizes(selectedProduct);
+  const extras=getExtras(selectedProduct);
+  const size=sizes.length ? sizes[Number($("#choiceSize").value)||0] : null;
+  const chosen=[...document.querySelectorAll(".choiceExtra:checked")].map(x=>extras[Number(x.value)]).filter(Boolean);
+  const qty=Math.max(1,Number($("#choiceQty").value||1));
+  let unit=Number(size?.preco ?? selectedProduct.preco ?? 0);
+  chosen.forEach(x=>unit+=Number(x.preco||0));
+  const key=JSON.stringify([selectedProduct.id,size?.nome||size?.tamanho||"",chosen.map(x=>x.id||x.nome||x)]);
+  const old=cart.find(x=>x._key===key);
+  if(old){old.quantidade+=qty;old.subtotal=unit*old.quantidade}
+  else cart.push({_key:key,produto_id:selectedProduct.id,nome:selectedProduct.nome,preco:unit,tamanho:size?.nome||size?.tamanho||"",adicionais:chosen.map(x=>x.nome||x.titulo||x),quantidade:qty,subtotal:unit*qty});
+  saveCart(); closeProduct(); updateCartBadge();
+}
+
+function updateCartBadge(){
+  const n=cart.reduce((a,x)=>a+Number(x.quantidade||1),0);
+  document.querySelectorAll("#cartCount,.cart-count").forEach(e=>e.textContent=n);
+}
+function setupSearch(){
+  const input=$("#searchInput")||$("#search");
+  if(!input)return;
+  input.addEventListener("input",()=>{
+    const q=input.value.toLowerCase().trim();
+    renderProducts(products.filter(p=>[p.nome,p.categoria,p.descricao].some(v=>String(v||"").toLowerCase().includes(q))));
+  });
+}
+function setupStoreClick(){
+  document.querySelectorAll("[data-cart]").forEach(e=>e.onclick=()=>location.href="pedido.html");
+}
+async function init(){
+  loadCart();
+  await loadStore();
+  await loadCatalog();
+  setupSearch();
+  setupStoreClick();
+  updateCartBadge();
+  if(config.instagram && config.instagram_ativo){
+    document.querySelectorAll("#instagramLink").forEach(e=>{e.href=config.instagram;e.style.display="inline-flex"});
+  }
+  setInterval(loadStore,30000);
+}
+document.addEventListener("DOMContentLoaded",init);
