@@ -1,28 +1,1335 @@
-const db = window.supabaseClient;
-const CART_KEY = 'elshaddai_carrinho_v2';
-let config = {}, products = [], categories = [], cart = [], selectedProduct = null, selectedCategory = '';
-const $ = s => document.querySelector(s);
-const money = v => Number(v || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-const esc = v => String(v ?? '').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const arr = v => Array.isArray(v) ? v : [];
-function loadCart(){try{cart=JSON.parse(localStorage.getItem(CART_KEY)||'[]')}catch{cart=[]}}
-function saveCart(){localStorage.setItem(CART_KEY,JSON.stringify(cart));updateCartBadge()}
-function updateCartBadge(){const n=cart.reduce((a,i)=>a+Number(i.quantidade||1),0);document.querySelectorAll('#cartCount,.cart-count').forEach(e=>e.textContent=n)}
-function sizes(p){return arr(p?.tamanhos)}
-function extras(p){return arr(p?.adicionais)}
-function priceLabel(p){const s=sizes(p);return s.length?`A partir de ${money(Math.min(...s.map(x=>Number(x.preco||0))))}`:money(p.preco)}
-async function loadStore(){if(!db)return;const r=await db.from('configuracoes_loja').select('*').limit(1).maybeSingle();if(r.error)throw r.error;config=r.data||{};applyStore()}
-function applyStore(){const name=config.nome_loja||'Pastelaria El Shaddai', slogan=config.slogan||'Feito a dois, no ponto pra você!', logo=config.logo||'Logo.png';document.querySelectorAll('#storeName,#heroName').forEach(e=>e.textContent=name);document.querySelectorAll('#storeSlogan,#heroSlogan').forEach(e=>e.textContent=slogan);document.querySelectorAll('#storeLogo').forEach(e=>e.src=logo);const open=config.loja_aberta!==false;document.querySelectorAll('#storeStatus,#heroStatus').forEach(e=>{e.textContent=open?'ABERTA':'FECHADA';e.classList.toggle('closed',!open)});const ex=config.configuracoes_extras||{},h=ex.horarios||{};const hours=h.abertura&&h.fechamento?`${h.abertura} às ${h.fechamento}`:(ex.horario_exibicao||'');document.querySelectorAll('#openingHours,#storeHours').forEach(e=>e.textContent=hours?`Horário: ${hours}`:'');const banner=$('#storeBanner');if(banner){if(config.banner){banner.src=config.banner;banner.hidden=false}else banner.hidden=true}const info=$('#shopInfoText');if(info)info.textContent=config.informacoes||'';const ig=$('#instagramLink');if(ig&&config.instagram&&config.instagram_ativo!==false){ig.href=config.instagram;ig.hidden=false}}
-async function loadCatalog(){if(!db)return;const [p,c]=await Promise.all([db.from('produtos').select('*').eq('ativo',true).order('id'),db.from('categorias').select('*').eq('ativo',true).order('id')]);if(p.error)throw p.error;if(c.error)throw c.error;products=p.data||[];categories=c.data||[];renderCategories();renderProducts()}
-function renderCategories(){const box=$('#categoryChips');if(!box)return;box.innerHTML=`<button class="category-chip active" data-cat="">Todos</button>`+categories.map(c=>`<button class="category-chip" data-cat="${esc(c.nome)}">${esc(c.nome)}</button>`).join('');box.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{selectedCategory=b.dataset.cat;box.querySelectorAll('[data-cat]').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderProducts()})}
-function renderProducts(){const grid=$('#productsGrid');if(!grid)return;const q=($('#searchInput')?.value||'').toLowerCase().trim();let list=products.filter(p=>(!selectedCategory||p.categoria===selectedCategory)&&(!q||[p.nome,p.categoria,p.descricao,p.ingredientes].some(v=>String(Array.isArray(v)?v.join(' '):v||'').toLowerCase().includes(q))));if(!list.length){grid.innerHTML='<div class="empty-card">Nenhum produto encontrado.</div>';return}const open=config.loja_aberta!==false;grid.innerHTML=list.map(p=>{const disabled=p.disponivel===false||!open;return `<article class="product-card ${disabled?'unavailable':''}">${p.foto?`<img src="${esc(p.foto)}" alt="${esc(p.nome)}">`:''}<div class="product-card-body"><small>${esc(p.categoria||'')}</small><h3>${esc(p.nome)}</h3><p>${esc(p.descricao||'')}</p>${arr(p.ingredientes).length?`<small>Ingredientes: ${esc(arr(p.ingredientes).join(', '))}</small>`:''}<strong>${priceLabel(p)}</strong><button class="primary-btn" ${disabled?'disabled':''} data-add-product="${p.id}">${!open?'Loja fechada':p.disponivel===false?'Indisponível':'Adicionar'}</button></div></article>`}).join('')}
-function openProduct(id){selectedProduct=products.find(p=>Number(p.id)===Number(id));if(!selectedProduct)return;const m=$('#productModal');if(!m)return;const s=sizes(selectedProduct),a=extras(selectedProduct);$('#modalPhoto').src=selectedProduct.foto||'';$('#modalPhoto').hidden=!selectedProduct.foto;$('#modalCategory').textContent=selectedProduct.categoria||'';$('#modalName').textContent=selectedProduct.nome;$('#modalDescription').textContent=selectedProduct.descricao||'';$('#modalIngredients').textContent=arr(selectedProduct.ingredientes).length?'Ingredientes: '+arr(selectedProduct.ingredientes).join(', '):'';$('#sizeBox').hidden=!s.length;$('#additionalBox').hidden=!a.length;$('#sizeOptions').innerHTML=s.map((x,i)=>`<label class="choice"><input type="radio" name="sizeChoice" value="${i}" ${i===0?'checked':''}><span>${esc(x.nome||x.tamanho||'Tamanho')} — ${money(x.preco)}</span></label>`).join('');$('#additionalOptions').innerHTML=a.map((x,i)=>`<label class="choice"><input type="checkbox" class="extraChoice" value="${i}"><span>${esc(x.nome||x.titulo||x)}${x.preco?` — +${money(x.preco)}`:''}</span></label>`).join('');$('#qtyValue').textContent='1';$('#productModal').style.display='flex';updateModalPrice()}
-function closeProduct(){$('#productModal').style.display='none';selectedProduct=null}
-function chosen(){if(!selectedProduct)return{size:null,adds:[],unit:Number(selectedProduct.preco||0)};const s=sizes(selectedProduct),a=extras(selectedProduct);const idx=Number(document.querySelector('input[name="sizeChoice"]:checked')?.value||0),size=s.length?s[idx]:null,adds=[...document.querySelectorAll('.extraChoice:checked')].map(e=>a[Number(e.value)]).filter(Boolean);let unit=Number(size?.preco??selectedProduct.preco??0);adds.forEach(x=>unit+=Number(x.preco||0));return{size,adds,unit}}
-function updateModalPrice(){const q=Number($('#qtyValue')?.textContent||1),c=chosen();if($('#modalPrice'))$('#modalPrice').textContent=money(c.unit*q)}
-function addSelected(){if(!selectedProduct)return;const c=chosen(),q=Math.max(1,Number($('#qtyValue').textContent||1));const key=JSON.stringify([selectedProduct.id,c.size?.nome||c.size?.tamanho||'',c.adds.map(x=>x.id??x.nome??x)]);const old=cart.find(x=>x._key===key);const names=c.adds.map(x=>x.nome||x.titulo||String(x));if(old){old.quantidade+=q;old.subtotal=old.preco*old.quantidade}else cart.push({_key:key,produto_id:selectedProduct.id,nome:selectedProduct.nome,preco:c.unit,tamanho:c.size?.nome||c.size?.tamanho||'',adicionais:names,quantidade:q,subtotal:c.unit*q});saveCart();closeProduct();toast('Produto adicionado ao pedido')}
-function toast(t){const e=$('#toast');if(!e)return;e.textContent=t;e.classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>e.classList.remove('show'),2200)}
-document.addEventListener('click',e=>{const add=e.target.closest('[data-add-product]');if(add)openProduct(add.dataset.addProduct);if(e.target.matches('[data-close-modal]'))closeProduct();if(e.target.id==='qtyMinus'){const n=Math.max(1,Number($('#qtyValue').textContent)-1);$('#qtyValue').textContent=n;updateModalPrice()}if(e.target.id==='qtyPlus'){const n=Number($('#qtyValue').textContent)+1;$('#qtyValue').textContent=n;updateModalPrice()}if(e.target.closest('input[name="sizeChoice"],.extraChoice'))updateModalPrice()});
-function setup(){loadCart();$('#searchInput')?.addEventListener('input',renderProducts);$('#addToCartBtn')?.addEventListener('click',addSelected);document.querySelectorAll('[data-close-modal]').forEach(e=>e.onclick=closeProduct);window.addEventListener('storage',updateCartBadge)}
-async function init(){setup();try{await loadStore();await loadCatalog()}catch(e){const m=$('#menuMessage');if(m){m.hidden=false;m.textContent='Não foi possível carregar o cardápio agora.'}console.error(e)}updateCartBadge();setInterval(()=>loadStore().then(renderProducts).catch(()=>{}),30000)}
-document.addEventListener('DOMContentLoaded',init);
+// ======================================================
+// PASTELARIA EL SHADDAI
+// SCRIPT COMPLETO
+// ======================================================
+
+
+// ======================================================
+// CARRINHO
+// ======================================================
+
+let carrinho =
+    JSON.parse(localStorage.getItem("carrinho")) || [];
+
+
+// ======================================================
+// SALVAR CARRINHO
+// ======================================================
+
+function salvarCarrinho() {
+
+    localStorage.setItem(
+        "carrinho",
+        JSON.stringify(carrinho)
+    );
+
+    atualizarContador();
+}
+
+
+// ======================================================
+// CONTADOR
+// ======================================================
+
+function atualizarContador() {
+
+    const contador =
+        document.getElementById("contador");
+
+    if (!contador) return;
+
+    let quantidade = 0;
+
+    carrinho.forEach(function(item) {
+
+        quantidade +=
+            Number(item.quantidade || 1);
+
+    });
+
+    contador.textContent = quantidade;
+}
+
+
+// ======================================================
+// ADICIONAR PRODUTO NORMAL
+// ======================================================
+
+function adicionarProduto(nome, preco) {
+
+    const existente =
+        carrinho.find(function(item) {
+
+            return (
+                item.nome === nome &&
+                Number(item.preco) === Number(preco) &&
+                (!item.detalhes ||
+                 item.detalhes.length === 0)
+            );
+
+        });
+
+
+    if (existente) {
+
+        existente.quantidade =
+            Number(existente.quantidade || 1) + 1;
+
+    } else {
+
+        carrinho.push({
+
+            nome: nome,
+
+            preco: Number(preco),
+
+            quantidade: 1,
+
+            detalhes: []
+
+        });
+
+    }
+
+
+    salvarCarrinho();
+
+    alert(
+        "Produto adicionado ao carrinho!"
+    );
+}
+
+
+// ======================================================
+// PERSONALIZAR PRODUTO
+// ======================================================
+
+function personalizarProduto(
+    nome,
+    preco,
+    ingredientes = [],
+    adicionais = []
+) {
+
+    const antigo =
+        document.getElementById(
+            "personalizarModal"
+        );
+
+    if (antigo) antigo.remove();
+
+
+    const fundo =
+        document.createElement("div");
+
+    fundo.id =
+        "personalizarModal";
+
+
+    fundo.style.cssText = `
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.65);
+        z-index:99999;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:15px;
+    `;
+
+
+    const caixa =
+        document.createElement("div");
+
+
+    caixa.style.cssText = `
+        width:100%;
+        max-width:520px;
+        max-height:92vh;
+        overflow:auto;
+        background:#fff8e7;
+        border:4px solid #ffb300;
+        border-radius:22px;
+        padding:20px;
+        box-sizing:border-box;
+    `;
+
+
+    caixa.innerHTML = `
+
+        <h2 style="
+            color:#c62828;
+            text-align:center;
+            margin-top:0;
+        ">
+            Personalizar pedido
+        </h2>
+
+        <div style="
+            background:white;
+            border:2px solid #ffd166;
+            border-radius:15px;
+            padding:15px;
+            margin-bottom:20px;
+        ">
+
+            <strong style="
+                font-size:22px;
+            ">
+                ${nome}
+            </strong>
+
+            <div
+                id="totalPersonalizado"
+                style="
+                    color:#c62828;
+                    font-size:22px;
+                    font-weight:bold;
+                    margin-top:8px;
+                "
+            >
+                Total: R$ ${Number(preco)
+                    .toFixed(2)
+                    .replace(".", ",")}
+            </div>
+
+        </div>
+
+        ${
+            ingredientes.length > 0
+            ? `
+                <h3 style="
+                    color:#c62828;
+                ">
+                    Ingredientes
+                </h3>
+
+                <p style="
+                    font-size:15px;
+                    color:#666;
+                ">
+                    Desmarque o que você não quer.
+                </p>
+
+                <div id="listaIngredientes"></div>
+              `
+            : ""
+        }
+
+        ${
+            adicionais.length > 0
+            ? `
+                <h3 style="
+                    color:#c62828;
+                    margin-top:22px;
+                ">
+                    Adicionais
+                </h3>
+
+                <div id="listaAdicionais"></div>
+              `
+            : ""
+        }
+
+        <button
+            id="btnAdicionarPersonalizado"
+            style="
+                width:100%;
+                padding:16px;
+                margin-top:20px;
+                border:0;
+                border-radius:12px;
+                background:#ffb300;
+                font-size:19px;
+                font-weight:bold;
+                cursor:pointer;
+            "
+        >
+            Adicionar ao carrinho
+        </button>
+
+        <button
+            id="btnFecharPersonalizar"
+            style="
+                width:100%;
+                padding:14px;
+                margin-top:10px;
+                border:2px solid #c62828;
+                border-radius:12px;
+                background:white;
+                color:#c62828;
+                font-size:18px;
+                font-weight:bold;
+                cursor:pointer;
+            "
+        >
+            Fechar
+        </button>
+    `;
+
+
+    fundo.appendChild(caixa);
+
+    document.body.appendChild(fundo);
+
+
+    // ==================================================
+    // INGREDIENTES
+    // ==================================================
+
+    const listaIngredientes =
+        document.getElementById(
+            "listaIngredientes"
+        );
+
+
+    if (listaIngredientes) {
+
+        ingredientes.forEach(
+            function(ingrediente, index) {
+
+                listaIngredientes.innerHTML += `
+
+                    <label style="
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:center;
+                        background:white;
+                        border:1px solid #ddd;
+                        border-radius:12px;
+                        padding:13px;
+                        margin-bottom:8px;
+                        font-size:17px;
+                        cursor:pointer;
+                    ">
+
+                        <span>
+                            ${ingrediente}
+                        </span>
+
+                        <input
+                            type="checkbox"
+                            class="ingrediente"
+                            data-nome="${ingrediente}"
+                            checked
+                            style="
+                                width:24px;
+                                height:24px;
+                                accent-color:#ffb300;
+                            "
+                        >
+
+                    </label>
+                `;
+            }
+        );
+
+    }
+
+
+    // ==================================================
+    // ADICIONAIS
+    // ==================================================
+
+    const listaAdicionais =
+        document.getElementById(
+            "listaAdicionais"
+        );
+
+
+    if (listaAdicionais) {
+
+        adicionais.forEach(
+            function(adicional, index) {
+
+                listaAdicionais.innerHTML += `
+
+                    <label style="
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:center;
+                        background:white;
+                        border:1px solid #ddd;
+                        border-radius:12px;
+                        padding:13px;
+                        margin-bottom:8px;
+                        font-size:17px;
+                        cursor:pointer;
+                    ">
+
+                        <span>
+
+                            ${adicional.nome}
+
+                            <strong style="
+                                color:#c62828;
+                                margin-left:5px;
+                            ">
+                                + R$ ${Number(
+                                    adicional.preco
+                                )
+                                .toFixed(2)
+                                .replace(".", ",")}
+                            </strong>
+
+                        </span>
+
+                        <input
+                            type="checkbox"
+                            class="adicional"
+                            data-index="${index}"
+                            style="
+                                width:24px;
+                                height:24px;
+                                accent-color:#ffb300;
+                            "
+                        >
+
+                    </label>
+                `;
+            }
+        );
+
+    }
+
+
+    // ==================================================
+    // ATUALIZAR TOTAL
+    // ==================================================
+
+    function atualizarTotal() {
+
+        let total =
+            Number(preco);
+
+
+        caixa
+            .querySelectorAll(
+                ".adicional"
+            )
+            .forEach(function(check) {
+
+                if (check.checked) {
+
+                    const index =
+                        Number(
+                            check.dataset.index
+                        );
+
+                    total +=
+                        Number(
+                            adicionais[index].preco
+                        );
+
+                }
+
+            });
+
+
+        const totalElemento =
+            document.getElementById(
+                "totalPersonalizado"
+            );
+
+
+        if (totalElemento) {
+
+            totalElemento.textContent =
+                "Total: R$ " +
+                total
+                    .toFixed(2)
+                    .replace(".", ",");
+
+        }
+
+    }
+
+
+    caixa
+        .querySelectorAll(
+            ".adicional"
+        )
+        .forEach(function(check) {
+
+            check.addEventListener(
+                "change",
+                atualizarTotal
+            );
+
+        });
+
+
+    // ==================================================
+    // ADICIONAR PERSONALIZADO
+    // ==================================================
+
+    document
+        .getElementById(
+            "btnAdicionarPersonalizado"
+        )
+        .onclick =
+        function() {
+
+
+            let total =
+                Number(preco);
+
+
+            let detalhes = [];
+
+
+            // ------------------------------------------
+            // INGREDIENTES RETIRADOS
+            // ------------------------------------------
+
+            caixa
+                .querySelectorAll(
+                    ".ingrediente"
+                )
+                .forEach(function(check) {
+
+                    if (!check.checked) {
+
+                        detalhes.push(
+                            "Sem " +
+                            check.dataset.nome
+                        );
+
+                    }
+
+                });
+
+
+            // ------------------------------------------
+            // ADICIONAIS
+            // ------------------------------------------
+
+            let adicionaisEscolhidos = [];
+
+
+            caixa
+                .querySelectorAll(
+                    ".adicional"
+                )
+                .forEach(function(check) {
+
+                    if (check.checked) {
+
+                        const index =
+                            Number(
+                                check.dataset.index
+                            );
+
+
+                        const adicional =
+                            adicionais[index];
+
+
+                        adicionaisEscolhidos.push(
+                            adicional.nome
+                        );
+
+
+                        total +=
+                            Number(
+                                adicional.preco
+                            );
+
+                    }
+
+                });
+
+
+            // ------------------------------------------
+            // DETALHES DOS ADICIONAIS
+            // ------------------------------------------
+
+            adicionaisEscolhidos.forEach(
+                function(adicional) {
+
+                    detalhes.push(
+                        "Com " + adicional
+                    );
+
+                }
+            );
+
+
+            // ------------------------------------------
+            // ADICIONAR
+            // ------------------------------------------
+
+            carrinho.push({
+
+                nome: nome,
+
+                preco: total,
+
+                quantidade: 1,
+
+                detalhes: detalhes
+
+            });
+
+
+            salvarCarrinho();
+
+
+            fundo.remove();
+
+
+            alert(
+                "Produto adicionado ao carrinho!"
+            );
+
+        };
+
+
+    // ==================================================
+    // FECHAR
+    // ==================================================
+
+    document
+        .getElementById(
+            "btnFecharPersonalizar"
+        )
+        .onclick =
+        function() {
+
+            fundo.remove();
+
+        };
+
+}
+
+
+// ======================================================
+// PERSONALIZAR PIZZA
+// ======================================================
+
+function personalizarPizza(
+    nome,
+    preco,
+    ingredientes = [],
+    adicionais = []
+) {
+
+    personalizarProduto(
+        nome,
+        preco,
+        ingredientes,
+        adicionais
+    );
+
+}
+
+
+// ======================================================
+// PERSONALIZAR BATATA
+// ======================================================
+
+function personalizarBatata(
+    nome,
+    preco
+) {
+
+    const adicionais = [
+
+        {
+            nome: "Queijo",
+            preco: 3
+        },
+
+        {
+            nome: "Bacon",
+            preco: 4
+        },
+
+        {
+            nome: "Calabresa",
+            preco: 4
+        },
+
+        {
+            nome: "Catupiry",
+            preco: 3
+        },
+
+        {
+            nome: "Cheddar",
+            preco: 3
+        },
+
+        {
+            nome: "Molho especial",
+            preco: 2
+        }
+
+    ];
+
+
+    personalizarProduto(
+        nome,
+        preco,
+        [],
+        adicionais
+    );
+
+}
+
+
+// ======================================================
+// PERSONALIZAR BEBIDA
+// ======================================================
+
+function personalizarBebida(
+    nome,
+    tamanhos
+) {
+
+    const antigo =
+        document.getElementById(
+            "personalizarModal"
+        );
+
+    if (antigo) antigo.remove();
+
+
+    const fundo =
+        document.createElement("div");
+
+    fundo.id =
+        "personalizarModal";
+
+
+    fundo.style.cssText = `
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.65);
+        z-index:99999;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:15px;
+    `;
+
+
+    const caixa =
+        document.createElement("div");
+
+
+    caixa.style.cssText = `
+        width:100%;
+        max-width:500px;
+        background:#fff8e7;
+        border:4px solid #ffb300;
+        border-radius:22px;
+        padding:20px;
+    `;
+
+
+    let html = `
+
+        <h2 style="
+            text-align:center;
+            color:#c62828;
+            margin-top:0;
+        ">
+            Escolha o tamanho
+        </h2>
+
+    `;
+
+
+    tamanhos.forEach(
+        function(tamanho, index) {
+
+            html += `
+
+                <label style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    background:white;
+                    border:2px solid #ddd;
+                    border-radius:12px;
+                    padding:15px;
+                    margin-bottom:10px;
+                    font-size:18px;
+                    cursor:pointer;
+                ">
+
+                    <span>
+                        ${tamanho.nome}
+
+                        <strong style="
+                            color:#c62828;
+                            margin-left:6px;
+                        ">
+                            R$ ${Number(
+                                tamanho.preco
+                            )
+                            .toFixed(2)
+                            .replace(".", ",")}
+                        </strong>
+                    </span>
+
+                    <input
+                        type="radio"
+                        name="tamanhoBebida"
+                        value="${index}"
+                        ${
+                            index === 0
+                            ? "checked"
+                            : ""
+                        }
+                        style="
+                            width:24px;
+                            height:24px;
+                        "
+                    >
+
+                </label>
+
+            `;
+
+        }
+    );
+
+
+    html += `
+
+        <button
+            id="btnConfirmarBebida"
+            style="
+                width:100%;
+                padding:16px;
+                background:#ffb300;
+                border:0;
+                border-radius:12px;
+                font-size:19px;
+                font-weight:bold;
+            "
+        >
+            Adicionar ao carrinho
+        </button>
+
+        <button
+            id="btnFecharBebida"
+            style="
+                width:100%;
+                padding:14px;
+                margin-top:10px;
+                background:white;
+                border:2px solid #c62828;
+                border-radius:12px;
+                color:#c62828;
+                font-size:18px;
+                font-weight:bold;
+            "
+        >
+            Fechar
+        </button>
+
+    `;
+
+
+    caixa.innerHTML = html;
+
+    fundo.appendChild(caixa);
+
+    document.body.appendChild(fundo);
+
+
+    document
+        .getElementById(
+            "btnConfirmarBebida"
+        )
+        .onclick =
+        function() {
+
+            const escolhido =
+                caixa.querySelector(
+                    'input[name="tamanhoBebida"]:checked'
+                );
+
+
+            if (!escolhido) {
+
+                alert(
+                    "Escolha um tamanho."
+                );
+
+                return;
+
+            }
+
+
+            const tamanho =
+                tamanhos[
+                    Number(escolhido.value)
+                ];
+
+
+            carrinho.push({
+
+                nome:
+                    nome +
+                    " - " +
+                    tamanho.nome,
+
+                preco:
+                    Number(
+                        tamanho.preco
+                    ),
+
+                quantidade: 1,
+
+                detalhes: []
+
+            });
+
+
+            salvarCarrinho();
+
+
+            fundo.remove();
+
+
+            alert(
+                "Bebida adicionada ao carrinho!"
+            );
+
+        };
+
+
+    document
+        .getElementById(
+            "btnFecharBebida"
+        )
+        .onclick =
+        function() {
+
+            fundo.remove();
+
+        };
+
+}
+
+
+// ======================================================
+// CARRINHO
+// ======================================================
+
+function verCarrinho() {
+
+    const antigo =
+        document.getElementById(
+            "carrinhoModal"
+        );
+
+    if (antigo) antigo.remove();
+
+
+    const fundo =
+        document.createElement("div");
+
+    fundo.id =
+        "carrinhoModal";
+
+
+    fundo.style.cssText = `
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.65);
+        z-index:99998;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:15px;
+    `;
+
+
+    const caixa =
+        document.createElement("div");
+
+
+    caixa.style.cssText = `
+        width:100%;
+        max-width:520px;
+        max-height:92vh;
+        overflow:auto;
+        background:#fff8e7;
+        border:4px solid #ffb300;
+        border-radius:22px;
+        padding:20px;
+        box-sizing:border-box;
+    `;
+
+
+    caixa.innerHTML = `
+
+        <h2 style="
+            text-align:center;
+            color:#c62828;
+            margin-top:0;
+        ">
+            Seu Carrinho
+        </h2>
+
+    `;
+
+
+    let total = 0;
+
+
+    if (carrinho.length === 0) {
+
+        caixa.innerHTML += `
+
+            <p style="
+                text-align:center;
+                font-size:19px;
+            ">
+                Seu carrinho está vazio.
+            </p>
+
+        `;
+
+    } else {
+
+
+        carrinho.forEach(
+            function(produto, index) {
+
+                const quantidade =
+                    Number(
+                        produto.quantidade || 1
+                    );
+
+
+                total +=
+                    Number(produto.preco) *
+                    quantidade;
+
+
+                let detalhesHTML = "";
+
+
+                if (
+                    produto.detalhes &&
+                    produto.detalhes.length > 0
+                ) {
+
+                    detalhesHTML = `
+
+                        <div style="
+                            margin-top:8px;
+                            color:#666;
+                            font-size:15px;
+                        ">
+                            ${produto.detalhes
+                                .join("<br>")}
+                        </div>
+
+                    `;
+
+                }
+
+
+                caixa.innerHTML += `
+
+                    <div style="
+                        background:white;
+                        border:2px solid #ffd166;
+                        border-radius:14px;
+                        padding:15px;
+                        margin-bottom:12px;
+                    ">
+
+                        <strong style="
+                            font-size:18px;
+                        ">
+                            ${quantidade}x
+                            ${produto.nome}
+                        </strong>
+
+                        ${detalhesHTML}
+
+                        <p style="
+                            color:#c62828;
+                            font-weight:bold;
+                        ">
+                            R$ ${
+                                (
+                                    Number(
+                                        produto.preco
+                                    ) *
+                                    quantidade
+                                )
+                                .toFixed(2)
+                                .replace(".", ",")
+                            }
+                        </p>
+
+                        <button
+                            onclick="
+                                diminuirProduto(${index})
+                            "
+                            style="
+                                padding:10px 16px;
+                                font-size:20px;
+                                border:0;
+                                border-radius:8px;
+                                background:#ffb300;
+                            "
+                        >
+                            −
+                        </button>
+
+                        <strong style="
+                            margin:0 15px;
+                            font-size:19px;
+                        ">
+                            ${quantidade}
+                        </strong>
+
+                        <button
+                            onclick="
+                                aumentarProduto(${index})
+                            "
+                            style="
+                                padding:10px 16px;
+                                font-size:20px;
+                                border:0;
+                                border-radius:8px;
+                                background:#ffb300;
+                            "
+                        >
+                            +
+                        </button>
+
+                        <button
+                            onclick="
+                                removerProduto(${index})
+                            "
+                            style="
+                                margin-left:8px;
+                                padding:10px;
+                                background:#c62828;
+                                color:white;
+                                border:0;
+                                border-radius:8px;
+                            "
+                        >
+                            Remover
+                        </button>
+
+                    </div>
+
+                `;
+
+            }
+        );
+
+
+        caixa.innerHTML += `
+
+            <h2 style="
+                text-align:center;
+                color:#c62828;
+            ">
+                Total: R$ ${
+                    total
+                    .toFixed(2)
+                    .replace(".", ",")
+                }
+            </h2>
+
+            <button
+                onclick="irParaPedido()"
+                style="
+                    width:100%;
+                    padding:16px;
+                    background:#ffb300;
+                    border:0;
+                    border-radius:12px;
+                    font-size:19px;
+                    font-weight:bold;
+                "
+            >
+                Fazer pedido
+            </button>
+
+        `;
+
+    }
+
+
+    caixa.innerHTML += `
+
+        <button
+            id="fecharCarrinho"
+            style="
+                width:100%;
+                padding:14px;
+                margin-top:10px;
+                background:white;
+                border:2px solid #c62828;
+                border-radius:12px;
+                color:#c62828;
+                font-size:18px;
+                font-weight:bold;
+            "
+        >
+            Fechar
+        </button>
+
+    `;
+
+
+    fundo.appendChild(caixa);
+
+    document.body.appendChild(fundo);
+
+
+    document
+        .getElementById(
+            "fecharCarrinho"
+        )
+        .onclick =
+        function() {
+
+            fundo.remove();
+
+        };
+
+}
+
+
+// ======================================================
+// AUMENTAR
+// ======================================================
+
+function aumentarProduto(index) {
+
+    if (!carrinho[index]) return;
+
+
+    carrinho[index].quantidade =
+        Number(
+            carrinho[index].quantidade || 1
+        ) + 1;
+
+
+    salvarCarrinho();
+
+    verCarrinho();
+
+}
+
+
+// ======================================================
+// DIMINUIR
+// ======================================================
+
+function diminuirProduto(index) {
+
+    if (!carrinho[index]) return;
+
+
+    carrinho[index].quantidade =
+        Number(
+            carrinho[index].quantidade || 1
+        ) - 1;
+
+
+    if (
+        carrinho[index].quantidade <= 0
+    ) {
+
+        carrinho.splice(index, 1);
+
+    }
+
+
+    salvarCarrinho();
+
+    verCarrinho();
+
+}
+
+
+// ======================================================
+// REMOVER
+// ======================================================
+
+function removerProduto(index) {
+
+    if (!carrinho[index]) return;
+
+
+    carrinho.splice(index, 1);
+
+
+    salvarCarrinho();
+
+    verCarrinho();
+
+}
+
+
+// ======================================================
+// IR PARA PEDIDO
+// ======================================================
+
+function irParaPedido() {
+
+    if (carrinho.length === 0) {
+
+        alert(
+            "Seu carrinho está vazio."
+        );
+
+        return;
+
+    }
+
+
+    salvarCarrinho();
+
+
+    window.location.href =
+        "pedido.html";
+
+}
+
+
+// ======================================================
+// INICIAR
+// ======================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        atualizarContador();
+
+    }
+);
+// ==========================================
+// BOTÕES DE CATEGORIAS
+// ==========================================
+
+function irParaSecao(id) {
+
+    const secao = document.getElementById(id);
+
+    if (!secao) return;
+
+    secao.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+
+    }
