@@ -1,0 +1,28 @@
+PASTELARIA EL SHADDAI — PACOTE ÚNICO
+
+Este pacote reúne a base de arquivos disponíveis no projeto para a continuação da Pastelaria El Shaddai.
+
+Projeto existente:
+- GitHub: PastelariaElshaddai/Site-El-Shaddai
+- Supabase existente: qjwojyxfktabdkbiryfx
+
+Regras:
+- Não apagar a main.
+- Não criar outro Supabase.
+- Preservar o visual claro, vermelho/dourado e responsivo.
+- Tamanhos são diferentes de adicionais e devem ser preservados no pedido.
+- O fluxo deve ser ADM -> Supabase -> CLIENTE.
+
+Arquivos principais incluídos:
+- index.html
+- admin.html
+- admin.js
+- script.js
+- catalogo.js
+- supabase.js
+- BLOCO_TAMANHOS_SQL.sql
+- logo.png / Logo.png
+- documentação do projeto
+
+IMPORTANTE:
+Este pacote foi montado a partir dos arquivos disponíveis no histórico/Library. Ele não substitui a necessidade de revisar a branch atual do GitHub antes de fazer merge para main.
