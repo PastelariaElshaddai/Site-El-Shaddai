@@ -1,0 +1,24 @@
+PASTELARIA EL SHADDAI — ADM FINAL
+
+Arquivos desta atualização:
+- admin.html
+- admin.js
+
+Alterações incluídas:
+- Botão para visualizar o cardápio como cliente.
+- Controle visível de Loja Aberta / Loja Fechada na tela inicial.
+- Controle grava loja_aberta no Supabase existente.
+- Impressão de pedido em formato de mini impressão/ticket 80 mm, usando a impressão do navegador/sistema.
+- Faturamento de hoje e do mês no início e no Dashboard.
+- Botões para limpar a visualização do faturamento de hoje ou do mês sem apagar os pedidos do banco.
+- Promoções com escolha entre percentual, valor fixo ou produto cadastrado.
+- Categorias com botão Ver produtos para localizar rapidamente os produtos daquela categoria.
+- Indicador de visitas preparado para o contador que o cardápio do cliente registrar no mesmo dispositivo.
+- Mantidos os produtos e demais módulos existentes.
+
+IMPORTANTE:
+- Esta atualização é somente do ADM.
+- Não cria outro projeto Supabase nem altera tabelas.
+- O bloqueio de novos pedidos quando a loja estiver fechada depende também do código do cardápio do cliente e será tratado na atualização do cliente.
+- A impressão direta por Bluetooth depende do suporte da impressora e do sistema/navegador. O botão gera uma impressão térmica de 80 mm e abre a impressão do dispositivo.
+- Não apaga pedidos quando o faturamento é limpo; apenas grava um marco local para a visualização deste dispositivo.
