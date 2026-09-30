@@ -1,5 +1,102 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pedido — Pastelaria El Shaddai</title><link rel="stylesheet" href="style.css"></head>
-<body><header class="topbar"><a class="brand" href="index.html"><img id="logoPedido" src="Logo.png" alt="Logo"><span><strong id="nomeLojaPedido">Pastelaria El Shaddai</strong><small id="sloganPedido">Seu pedido</small></span></a><div class="top-actions"><span id="statusTopoPedido" class="store-status">Verificando...</span><a class="back" href="index.html">← Cardápio</a></div></header>
-<main class="container checkout"><div id="cartArea"></div><div id="checkoutArea"></div></main><div id="toast" class="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase.js"></script><script src="script.js"></script></body></html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meu Pedido — Pastelaria El Shaddai</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <img id="storeLogo" src="Logo.png" alt="Logo">
+      <div class="brand-text"><strong id="storeName">Pastelaria El Shaddai</strong><span id="storeSlogan">Feito a dois, no ponto pra você!</span></div>
+    </a>
+    <a class="cart-btn" href="index.html">← Cardápio</a>
+  </div>
+</header>
+
+<main class="menu-wrap" style="max-width:900px">
+  <div class="panel" style="background:#fff;border:1px solid #e7e9ec;border-radius:12px;padding:20px">
+    <h1 style="margin-top:0">Seu pedido</h1>
+    <div id="cartArea"></div>
+  </div>
+
+  <div class="panel" style="background:#fff;border:1px solid #e7e9ec;border-radius:12px;padding:20px;margin-top:16px">
+    <h2>Finalizar pedido</h2>
+    <form id="checkoutForm" class="form-grid">
+      <div class="field"><label>Nome</label><input id="nome" required></div>
+      <div class="field"><label>Telefone</label><input id="telefone" required></div>
+      <div class="field"><label>Tipo</label><select id="tipo"><option value="entrega">Entrega</option><option value="retirada">Retirada</option></select></div>
+      <div class="field"><label>Pagamento</label><select id="pagamento"><option value="pix">Pix</option><option value="cartao">Cartão</option><option value="dinheiro">Dinheiro</option></select></div>
+      <div class="field full"><label>Endereço</label><textarea id="endereco" placeholder="Informe o endereço para entrega"></textarea></div>
+      <div class="field"><label>Troco para</label><input id="troco" type="number" step="0.01" placeholder="Somente dinheiro"></div>
+      <div class="field"><label>Cupom</label><input id="cupom" placeholder="Código do cupom"></div>
+      <div class="field full"><label>Observações</label><textarea id="observacao" placeholder="Alguma observação?"></textarea></div>
+      <div class="field full"><button class="primary-btn" type="submit">Enviar pedido</button></div>
+    </form>
+    <p id="checkoutMessage" style="color:#777;font-size:13px"></p>
+  </div>
+</main>
+
+<div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script>
+const db=window.supabaseClient;
+const KEY="elshaddai_carrinho_v1";
+const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+let cart=JSON.parse(localStorage.getItem(KEY)||"[]"), config=null, promos=[];
+
+function save(){localStorage.setItem(KEY,JSON.stringify(cart))}
+function render(){
+ const e=document.getElementById("cartArea");
+ if(!cart.length){e.innerHTML='<div class="empty-card"><strong>Seu pedido está vazio</strong><p>Volte ao cardápio para escolher seus produtos.</p><a class="primary-btn" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none">Ver cardápio</a></div>';return}
+ let total=cart.reduce((a,i)=>a+Number(i.subtotal||i.preco||0)*Number(i.quantidade||1),0);
+ e.innerHTML=cart.map((i,n)=>`<div style="padding:14px 0;border-bottom:1px solid #eee"><div style="display:flex;justify-content:space-between;gap:10px"><strong>${esc(i.nome)}</strong><strong>${money(Number(i.subtotal||i.preco||0)*Number(i.quantidade||1))}</strong></div><small>${i.tamanho?esc(i.tamanho)+" · ":""}${i.adicionais?.length?esc(Array.isArray(i.adicionais)?i.adicionais.join(", "):i.adicionais):""}</small><div style="display:flex;align-items:center;gap:8px;margin-top:9px"><button class="secondary-btn" type="button" onclick="qty(${n},-1)">−</button><span>${i.quantidade||1}</span><button class="secondary-btn" type="button" onclick="qty(${n},1)">+</button><button class="danger-btn" type="button" onclick="removeItem(${n})">Remover</button></div></div>`).join("")+`<div style="display:flex;justify-content:space-between;padding-top:16px;font-size:18px"><strong>Total</strong><strong>${money(total)}</strong></div>`;
+}
+function qty(n,d){cart[n].quantidade=Math.max(1,Number(cart[n].quantidade||1)+d);cart[n].subtotal=Number(cart[n].preco||0)*cart[n].quantidade;save();render()}
+function removeItem(n){cart.splice(n,1);save();render()}
+async function start(){
+ if(!db)return;
+ const c=await db.from("configuracoes_loja").select("*").limit(1).maybeSingle();config=c.data||{};
+ if(config.loja_aberta===false){document.getElementById("checkoutMessage").textContent="A loja está fechada no momento. O pedido não pode ser enviado.";document.querySelector("#checkoutForm button").disabled=true}
+ const p=await db.from("promocoes").select("*").eq("ativo",true);promos=p.data||[];
+ if(config.nome_loja)document.getElementById("storeName").textContent=config.nome_loja;
+ if(config.slogan)document.getElementById("storeSlogan").textContent=config.slogan;
+ if(config.logo)document.getElementById("storeLogo").src=config.logo;
+ render();
+}
+document.getElementById("tipo").onchange=e=>document.getElementById("endereco").required=e.target.value==="entrega";
+document.getElementById("checkoutForm").onsubmit=async e=>{
+ e.preventDefault();
+ if(!cart.length)return;
+ if(config?.loja_aberta===false)return;
+ const tipo=document.getElementById("tipo").value;
+ const endereco=document.getElementById("endereco").value.trim();
+ if(tipo==="entrega"&&!endereco){document.getElementById("endereco").focus();return}
+ const pay=document.getElementById("pagamento").value;
+ const coupon=document.getElementById("cupom").value.trim().toUpperCase();
+ const promo=promos.find(p=>String(p.codigo).toUpperCase()===coupon);
+ let subtotal=cart.reduce((a,i)=>a+Number(i.subtotal||i.preco||0)*Number(i.quantidade||1),0);
+ let desconto=promo?subtotal*Number(promo.desconto||0)/100:0;
+ const ex=config?.configuracoes_extras||{},fee=tipo==="entrega"?Number(ex?.entrega?.taxa_fixa||0):0,total=Math.max(0,subtotal+fee-desconto);
+ const itens=cart.map(i=>({...i,quantidade:Number(i.quantidade||1),subtotal:Number(i.subtotal||i.preco||0)*Number(i.quantidade||1)}));
+ const obs=[document.getElementById("observacao").value.trim(),promo?`Cupom ${promo.codigo}: -${money(desconto)}`:"",`Subtotal: ${money(subtotal)}`,`Taxa de entrega: ${money(fee)}`,`Desconto: ${money(desconto)}`,`Troco para: ${pay==="dinheiro"?money(document.getElementById("troco").value):"Não se aplica"}`].filter(Boolean).join(" | ");
+ const payload={cliente_nome:document.getElementById("nome").value.trim(),cliente_telefone:document.getElementById("telefone").value.trim(),endereco,tipo,pagamento:pay,observacao:obs,itens,total,status:"novo"};
+ const r=await db.from("pedidos").insert(payload).select("id").single();
+ if(r.error){document.getElementById("checkoutMessage").textContent=r.error.message;return}
+ const id=r.data.id;
+ const phone=String(config?.whatsapp||"").replace(/\D/g,"");
+ const base=location.href.replace(/pedido\.html.*$/,"");
+ const track=base+"acompanhar.html?id="+encodeURIComponent(id);
+ const msg=`*Pedido #${id} — ${config?.nome_loja||"Pastelaria El Shaddai"}*%0ACliente: ${encodeURIComponent(payload.cliente_nome)}%0ATelefone: ${encodeURIComponent(payload.cliente_telefone)}%0ATipo: ${tipo}%0A${encodeURIComponent(endereco?"Endereço: "+endereco:"")}%0A%0A${encodeURIComponent(itens.map(i=>`${i.quantidade}x ${i.nome}${i.tamanho?" ("+i.tamanho+")":""} — ${money(i.subtotal)}`).join("\n"))}%0A%0ASubtotal: ${money(subtotal)}%0ATaxa: ${money(fee)}%0ADesconto: ${money(desconto)}%0ATotal: ${money(total)}%0APagamento: ${pay}%0A${encodeURIComponent(track)}`;
+ localStorage.removeItem(KEY);cart=[];
+ window.location.href=phone?`https://wa.me/${phone}?text=${msg}`:`acompanhar.html?id=${encodeURIComponent(id)}`;
+};
+start();
+</script>
+</body>
+</html>
