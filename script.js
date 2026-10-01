@@ -1283,26 +1283,56 @@ function removerProduto(index) {
 // IR PARA PEDIDO
 // ======================================================
 
-function irParaPedido() {
-
+async function irParaPedido() {
     if (carrinho.length === 0) {
-
-        alert(
-            "Seu carrinho está vazio."
-        );
-
+        alert("Seu carrinho está vazio.");
         return;
-
     }
 
+    if (document.documentElement.dataset.lojaAberta === "false") {
+        alert("A loja está fechada no momento. O pedido só pode ser iniciado quando a loja estiver aberta.");
+        return;
+    }
+
+    try {
+        if (typeof supabaseClient !== "undefined") {
+            const r = await supabaseClient.from("configuracoes_loja").select("loja_aberta").order("id", {ascending:true}).limit(1);
+            if (r.data && r.data[0] && r.data[0].loja_aberta === false) {
+                document.documentElement.dataset.lojaAberta = "false";
+                alert("A loja está fechada no momento. O pedido só pode ser iniciado quando a loja estiver aberta.");
+                return;
+            }
+        }
+    } catch (e) {
+        console.warn("Não foi possível confirmar o status da loja antes do pedido.", e);
+    }
 
     salvarCarrinho();
-
-
-    window.location.href =
-        "pedido.html";
-
+    window.location.href = "pedido.html";
 }
+
+// Validação compartilhada de cupons para o checkout existente.
+// A regra de uso por cliente é baseada no histórico real de pedidos.
+async function validarCupomElShaddai(codigo, telefone) {
+    const normalizado = String(codigo || "").trim().toUpperCase();
+    if (!normalizado || typeof supabaseClient === "undefined") return {ok:false, motivo:"Cupom inválido."};
+    const promo = await supabaseClient.from("promocoes").select("*").eq("codigo", normalizado).eq("ativo", true).limit(1);
+    if (promo.error) return {ok:false, motivo:"Não foi possível validar o cupom agora."};
+    const p = (promo.data || [])[0];
+    if (!p) return {ok:false, motivo:"Cupom inválido ou inativo."};
+    if (p.validade && new Date(p.validade + "T23:59:59") < new Date()) return {ok:false, motivo:"Este cupom está fora da validade."};
+
+    const tel = String(telefone || "").replace(/\D/g, "");
+    if (!tel) return {ok:true, promocao:p};
+    const cl = await supabaseClient.from("clientes").select("quantidade_pedidos").eq("telefone", tel).limit(1);
+    const compras = cl.data && cl.data[0] ? Number(cl.data[0].quantidade_pedidos || 0) : 0;
+    const descricao = String(p.descricao || "").toLowerCase();
+    if ((descricao.includes("primeira compra") || descricao.includes("primeiro pedido") || descricao.includes("primeiro pastel") || descricao.includes("primeiro refri") || descricao.includes("primeira vez")) && compras > 0) {
+        return {ok:false, motivo:"Este cupom é válido somente para a primeira compra deste cliente."};
+    }
+    return {ok:true, promocao:p};
+}
+window.validarCupomElShaddai = validarCupomElShaddai;
 
 
 // ======================================================

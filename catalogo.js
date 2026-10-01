@@ -10,9 +10,9 @@
   }
 
   function moeda(v) {
-    return Number(v || 0).toLocaleString("pt-BR", {
-      style: "currency", currency: "BRL"
-    });
+    var n = Number(v);
+    if (!Number.isFinite(n) || n <= 0) return "";
+    return n.toLocaleString("pt-BR", {style: "currency", currency: "BRL"});
   }
 
   function arr(v) { return Array.isArray(v) ? v : []; }
@@ -41,49 +41,55 @@
 
     var nome = c.nome_loja || "Pastelaria El Shaddai";
     var slogan = c.slogan || "Feito a dois, no ponto pra você!";
-
     var h1 = document.querySelector("header h1");
     var p = document.querySelector("header p");
     var logo = document.querySelector(".logo-area img");
-
+    var header = document.getElementById("cabecalhoLoja");
     if (h1) h1.textContent = nome;
     if (p) p.textContent = slogan;
-    if (logo && c.logo) {
-      logo.src = c.logo;
-      logo.alt = nome;
-    }
-
+    if (logo && c.logo) { logo.src = c.logo; logo.alt = nome; }
     document.title = nome;
 
-    var banner = document.querySelector(".banner-principal");
-    if (banner && c.banner) {
-      banner.style.backgroundImage =
-        "linear-gradient(rgba(198,40,40,.78),rgba(255,179,0,.72)),url('" +
-        String(c.banner).replace(/'/g, "%27") + "')";
-      banner.style.backgroundSize = "cover";
-      banner.style.backgroundPosition = "center";
+    if (header && c.banner) {
+      header.style.backgroundImage = "url('" + String(c.banner).replace(/'/g, "%27") + "')";
     }
 
     var status = document.getElementById("statusLojaCliente");
-    if (!status) {
-      status = document.createElement("div");
-      status.id = "statusLojaCliente";
-      status.style.cssText =
-        "display:none;margin:10px 0;padding:12px;border-radius:12px;text-align:center;font-weight:bold;";
-      var container = document.querySelector(".container");
-      if (container) container.prepend(status);
+    var aberto = c.loja_aberta !== false;
+    if (status) {
+      status.style.display = "inline-flex";
+      status.style.color = aberto ? "#176b35" : "#a51e1e";
+      status.innerHTML = '<span class="status-dot"></span><span>' + (aberto ? "Loja aberta" : "Loja fechada") + '</span>';
     }
 
-    if (status) {
-      if (c.loja_aberta === false) {
-        status.textContent = "🔴 A loja está fechada no momento.";
-        status.style.display = "block";
-        status.style.background = "#ffe5e5";
-        status.style.color = "#a11";
-      } else {
-        status.style.display = "none";
-      }
+    var wa = document.getElementById("clienteWhatsapp");
+    var waNum = String(c.whatsapp || "").replace(/\D/g, "");
+    if (wa && waNum) { wa.href = "https://wa.me/" + waNum; wa.style.display = "inline-flex"; }
+
+    var ig = document.getElementById("clienteInstagram");
+    if (ig && c.instagram_ativo !== false && c.instagram) { ig.href = c.instagram; ig.style.display = "inline-flex"; }
+
+    document.documentElement.dataset.lojaAberta = aberto ? "true" : "false";
+    var aviso = document.getElementById("avisoLojaFechada");
+    if (!aviso) {
+      aviso = document.createElement("div");
+      aviso.id = "avisoLojaFechada";
+      aviso.className = "loja-fechada-overlay";
+      var container = document.querySelector(".container");
+      if (container) container.prepend(aviso);
     }
+    if (aviso) {
+      aviso.textContent = aberto ? "" : "A loja está fechada no momento. Os pedidos estarão disponíveis quando a loja for aberta.";
+      aviso.style.display = aberto ? "none" : "block";
+    }
+
+    document.querySelectorAll(".acoes .botao").forEach(function(btn){
+      if (btn.textContent.toLowerCase().includes("fazer pedido")) {
+        btn.disabled = !aberto;
+        btn.style.opacity = aberto ? "1" : ".55";
+        btn.style.cursor = aberto ? "pointer" : "not-allowed";
+      }
+    });
   }
 
   function renderCategorias(categorias, produtos) {
@@ -147,16 +153,19 @@
 
         var foto = produto.foto
           ? '<img src="' + esc(produto.foto) + '" alt="' + esc(produto.nome) +
-            '" style="width:100%;height:180px;object-fit:cover;border-radius:12px;margin-bottom:10px;">'
+            '" style="width:100%;height:180px;object-fit:cover;border-radius:14px;margin-bottom:12px;">'
           : "";
+        var tamanhosProduto = arr(produto.tamanhos).map(function(t){return {nome:String(t.nome||""),preco:Number(t.preco||0)}}).filter(function(t){return t.nome;});
+        var precoTexto = tamanhosProduto.length ? "Escolha o tamanho" : moeda(produto.preco);
+        var precoHtml = precoTexto ? '<p class="preco">' + esc(precoTexto) + '</p>' : '<p class="produto-sem-preco">Preço informado no tamanho ou na finalização.</p>';
 
         card.innerHTML =
           foto +
           "<h3>" + esc(produto.nome) + "</h3>" +
           "<p>" + esc(produto.descricao || "") + "</p>" +
-          '<p class="preco">' + moeda(produto.preco) + "</p>" +
+          precoHtml +
           '<button class="botao" type="button">' +
-          (produto.disponivel === false ? "Indisponível" : "Personalizar") +
+          (produto.disponivel === false ? "Indisponível" : (tamanhosProduto.length ? "Escolher tamanho" : "Personalizar")) +
           "</button>";
 
         var btn = card.querySelector("button");
@@ -169,21 +178,17 @@
           btn.onclick = function(){
             var ingredientes = ingredientesDo(produto);
             var adicionais = adicionaisDo(produto);
-            var tamanhos = arr(produto.tamanhos).map(function(t){return {nome:String(t.nome||""),preco:Number(t.preco||0)}}).filter(function(t){return t.nome;});
-
-            if (tamanhos.length) {
-              if (typeof escolherTamanhoProduto === "function") {
-                escolherTamanhoProduto(produto.nome,tamanhos,ingredientes,adicionais);
+            try {
+              if (tamanhosProduto.length && typeof window.escolherTamanhoProduto === "function") {
+                window.escolherTamanhoProduto(produto.nome,tamanhosProduto,ingredientes,adicionais);
+              } else if (typeof window.personalizarProduto === "function") {
+                window.personalizarProduto(produto.nome,Number(produto.preco || 0),ingredientes,adicionais);
+              } else if (typeof window.adicionarProduto === "function") {
+                window.adicionarProduto(produto.nome,Number(produto.preco || 0));
               }
-            } else if (typeof personalizarProduto === "function") {
-              personalizarProduto(
-                produto.nome,
-                Number(produto.preco || 0),
-                ingredientes,
-                adicionais
-              );
-            } else if (typeof adicionarProduto === "function") {
-              adicionarProduto(produto.nome, Number(produto.preco || 0));
+            } catch (e) {
+              console.error("Erro ao abrir personalização:", e);
+              alert("Não foi possível abrir a personalização deste produto.");
             }
           };
         }

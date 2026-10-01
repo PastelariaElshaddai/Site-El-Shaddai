@@ -9,7 +9,7 @@
 
 <title>Pastelaria El Shaddai</title>
 
-<link rel="stylesheet" href="style.css">
+
 
 <style>
 
@@ -38,20 +38,53 @@ body {
 ========================================= */
 
 header {
-    background: linear-gradient(
-        135deg,
-        #c62828,
-        #e53935,
-        #ffb300
-    );
-
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg,#8f1717,#c62828 55%,#b97800);
+    background-size: cover;
+    background-position: center;
     color: white;
     text-align: center;
-    padding: 28px 12px 25px;
-
-    box-shadow:
-        0 4px 15px rgba(0,0,0,.18);
+    padding: 18px 12px 22px;
+    box-shadow: 0 5px 18px rgba(0,0,0,.18);
 }
+
+header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg,rgba(90,0,0,.55),rgba(0,0,0,.38));
+    z-index: 0;
+}
+
+.header-content { position: relative; z-index: 1; }
+
+.header-actions {
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    display: flex;
+    gap: 8px;
+    z-index: 3;
+}
+
+.header-social {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.95); color: #c62828;
+    border: 1px solid rgba(255,255,255,.7);
+    box-shadow: 0 3px 10px rgba(0,0,0,.16);
+    text-decoration: none;
+}
+.header-social svg { width: 19px; height: 19px; fill: currentColor; }
+
+.status-loja {
+    display: inline-flex; align-items: center; gap: 7px;
+    margin-top: 10px; padding: 7px 12px; border-radius: 999px;
+    background: rgba(255,255,255,.94); color: #a51e1e;
+    font-size: 13px; font-weight: 800; box-shadow: 0 3px 10px rgba(0,0,0,.15);
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 
 
 /* =========================================
@@ -59,10 +92,10 @@ header {
 ========================================= */
 
 .logo-area {
-    width: 120px;
-    height: 120px;
+    width: 108px;
+    height: 108px;
 
-    margin: 0 auto 12px;
+    margin: 0 auto 10px;
 
     background: white;
 
@@ -173,26 +206,12 @@ header p {
 ========================================= */
 
 .botao-pesquisa {
-    position: absolute;
-
-    right: 5px;
-    top: 4px;
-
-    width: 44px;
-    height: 44px;
-
-    border: none;
-
-    border-radius: 11px;
-
-    background: #ffb300;
-
-    color: #c62828;
-
-    font-size: 22px;
-
-    cursor: pointer;
+    position: absolute; right: 5px; top: 4px; width: 44px; height: 44px;
+    border: 0; border-radius: 12px; background: #c62828; color: #fff;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    box-shadow: 0 3px 9px rgba(198,40,40,.22);
 }
+.botao-pesquisa svg { width:20px; height:20px; stroke:currentColor; }
 
 .botao-pesquisa:active {
     transform: scale(.95);
@@ -211,41 +230,6 @@ header p {
     margin-bottom: 12px;
 
     overflow: hidden;
-}
-
-
-/* =========================================
-   AVISO DESLIZE
-========================================= */
-
-.aviso-deslize {
-    position: absolute;
-
-    right: 0;
-    top: 50%;
-
-    transform: translateY(-50%);
-
-    z-index: 5;
-
-    background: rgba(255,255,255,.96);
-
-    color: #c62828;
-
-    font-size: 9px;
-
-    font-weight: bold;
-
-    padding: 3px 5px;
-
-    border-radius: 8px;
-
-    pointer-events: none;
-
-    box-shadow:
-        0 1px 4px rgba(0,0,0,.08);
-
-    transition: opacity .3s;
 }
 
 
@@ -346,78 +330,8 @@ header p {
 }
 
 
-/* =========================================
-   BANNER PRINCIPAL
-========================================= */
-
-.banner-principal {
-    position: relative;
-
-    overflow: hidden;
-
-    background:
-        linear-gradient(
-            135deg,
-            #c62828,
-            #e53935 50%,
-            #ffb300
-        );
-
-    color: white;
-
-    border-radius: 22px;
-
-    padding: 28px 22px;
-
-    margin: 20px 0;
-
-    box-shadow:
-        0 6px 18px rgba(0,0,0,.15);
-
-    text-align: center;
-}
-
-.banner-principal::after {
-    content: "🥟";
-
-    position: absolute;
-
-    right: 15px;
-    bottom: -15px;
-
-    font-size: 75px;
-
-    opacity: .18;
-
-    transform: rotate(-15deg);
-}
-
-.banner-principal h2 {
-    margin: 0 0 10px;
-
-    font-size: 28px;
-
-    position: relative;
-
-    z-index: 1;
-}
-
-.banner-principal p {
-    margin: 7px 0;
-
-    font-size: 17px;
-
-    position: relative;
-
-    z-index: 1;
-}
-
-.banner-principal strong {
-    font-size: 20px;
-
-    color: #fffde7;
-}
-
+/* Banner principal agora fica integrado ao cabeçalho quando configurado pelo ADM. */
+.banner-principal { display:none !important; }
 
 /* =========================================
    PROMOÇÃO
@@ -523,13 +437,12 @@ header p {
 ========================================= */
 
 .card-produto {
-    background: white;
-
-    border: 2px solid #ffd166;
-
+    background: #fff;
+    border: 1px solid #ead9b3;
     border-radius: 18px;
-
-    padding: 17px;
+    padding: 16px;
+    display:flex; flex-direction:column;
+    min-width:0;
 
     box-shadow:
         0 4px 12px rgba(0,0,0,.08);
@@ -557,20 +470,18 @@ header p {
 }
 
 .card-produto .preco {
-    color: #c62828;
+    color:#c62828; font-size:20px; font-weight:800; margin:10px 0 12px;
+    min-height: 24px;
+}
+.card-produto .botao { width:100%; margin-top:auto; min-height:44px; }
+.card-produto .produto-sem-preco { min-height:24px; margin:10px 0 12px; color:#777; font-size:14px; }
 
-    font-size: 21px;
-
-    font-weight: bold;
-
-    margin: 12px 0;
+.loja-fechada-overlay {
+    background:#fff; border:1px solid #efcaca; color:#8e2020; border-radius:14px;
+    padding:12px 14px; margin:12px 0; font-weight:700; text-align:center;
 }
 
-.card-produto .botao {
-    width: 100%;
-
-    margin-top: 5px;
-}
+@media (max-width:600px){ .header-actions{right:9px;top:9px}.header-social{width:34px;height:34px}.logo-area{width:96px;height:96px}.card-produto{padding:14px}.produtos{gap:12px} }
 
 
 /* =========================================
@@ -652,25 +563,21 @@ header p {
      CABEÇALHO
 ========================================= -->
 
-<header>
-
-    <div class="logo-area">
-
-        <img
-            src="logo.png"
-            alt="Pastelaria El Shaddai"
-        >
-
+<header id="cabecalhoLoja">
+    <div class="header-actions">
+        <a id="clienteWhatsapp" class="header-social" href="#" target="_blank" rel="noopener" aria-label="WhatsApp" style="display:none">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 3.5A11.8 11.8 0 0 0 12.08 0C5.55 0 .24 5.31.24 11.84c0 2.09.55 4.13 1.6 5.92L.15 24l6.4-1.68a11.8 11.8 0 0 0 5.53 1.37h.01c6.53 0 11.84-5.31 11.84-11.84 0-3.16-1.23-6.13-3.43-8.35ZM12.09 21.65h-.01a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.8 1 1.02-3.7-.23-.38a9.78 9.78 0 1 1 8.37 4.66Zm5.37-7.34c-.29-.15-1.71-.84-1.98-.94-.27-.1-.47-.15-.67.15-.2.3-.76.94-.93 1.13-.17.2-.34.22-.63.07-.29-.15-1.22-.45-2.33-1.44-.86-.77-1.44-1.72-1.61-2.01-.17-.3-.02-.46.13-.61.13-.13.29-.34.44-.51.15-.17.2-.3.3-.49.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.91-2.2-.24-.58-.48-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.01-1.04 2.46s1.06 2.85 1.21 3.05c.15.2 2.09 3.2 5.07 4.49.71.31 1.27.49 1.7.63.72.23 1.38.2 1.9.12.58-.09 1.71-.7 1.95-1.37.24-.67.24-1.25.17-1.37-.07-.12-.27-.2-.56-.35Z"/></svg>
+        </a>
+        <a id="clienteInstagram" class="header-social" href="#" target="_blank" rel="noopener" aria-label="Instagram" style="display:none">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5Zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5ZM17.5 6a1 1 0 1 1-1 1 1 1 0 0 1 1-1Z"/></svg>
+        </a>
     </div>
-
-    <h1>
-        Pastelaria El Shaddai
-    </h1>
-
-    <p>
-        Feito a dois, no ponto pra você!
-    </p>
-
+    <div class="header-content">
+        <div class="logo-area"><img src="Logo.png" alt="Pastelaria El Shaddai"></div>
+        <h1>Pastelaria El Shaddai</h1>
+        <p>Feito a dois, no ponto pra você!</p>
+        <div id="statusLojaCliente" class="status-loja"><span class="status-dot"></span><span>Verificando loja</span></div>
+    </div>
 </header>
 
 
@@ -696,7 +603,7 @@ header p {
         onclick="executarPesquisa()"
         aria-label="Pesquisar">
 
-        🔍
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="M16 16l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
 
     </button>
 
@@ -745,13 +652,6 @@ header p {
 
     </div>
 
-    <div
-        id="avisoDeslize"
-        class="aviso-deslize">
-
-        deslize →
-
-    </div>
 
 </div>
 
@@ -775,24 +675,6 @@ header p {
         <strong>
             Peça agora!
         </strong>
-    </p>
-
-</div>
-
-
-<!-- =========================================
-     PROMOÇÃO
-========================================= -->
-
-<div class="banner-promocao">
-
-    <h2>
-        PROMOÇÃO DA SEMANA
-    </h2>
-
-    <p>
-        Na compra de 2 pastéis,
-        ganhe um refrigerante com desconto.
     </p>
 
 </div>
@@ -1663,39 +1545,6 @@ function irParaSecao(id) {
         block: "start"
 
     });
-
-}
-
-
-/* =========================================
-   AVISO "DESLIZE →"
-========================================= */
-
-const categorias =
-    document.getElementById("categorias");
-
-const avisoDeslize =
-    document.getElementById("avisoDeslize");
-
-
-if (categorias) {
-
-    categorias.addEventListener(
-        "scroll",
-        function() {
-
-            if (categorias.scrollLeft > 5) {
-
-                if (avisoDeslize) {
-
-                    avisoDeslize.style.opacity = "0";
-
-                }
-
-            }
-
-        }
-    );
 
 }
 
