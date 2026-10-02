@@ -30,12 +30,12 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="supabase.js?v=20261001-final"></script>
+<script src="supabase.js?v=20261002-final-fix"></script>
 <script>
 const moeda=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const arr=v=>Array.isArray(v)?v:[];let carrinho=JSON.parse(localStorage.getItem("carrinho")||"[]"),config=null,promocoes=[],produtosCatalogo=[],delivery=null,desconto=0,cupomAplicado=null;
 const MARKER="ELSHADDAI_CONFIG_V3";
-function metaConfig(text){const i=String(text||"").indexOf(MARKER);if(i<0)return{};try{return JSON.parse(String(text).slice(i+MARKER.length).trim())||{}}catch{return{}}}
+function metaConfig(text){const raw=String(text||""),i=raw.indexOf(MARKER);if(i<0)return{};let part=raw.slice(i+MARKER.length).trim();if(part.startsWith("|"))part=part.slice(1).trim();try{const d=JSON.parse(part)||{};return {mode:d.modo||d.mode||"off",kmValue:Number(d.km_valor??d.kmValue??0),kmMax:Number(d.km_max??d.kmMax??0),freeAbove:Number(d.gratis_acima??d.freeAbove??0),minFee:Number(d.taxa_min??d.minFee??0),bairros:d.bairros||{}}}catch{return{}}}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
 function subtotal(){return carrinho.reduce((s,i)=>s+Number(i.preco||0)*Number(i.quantidade||1),0)}
 function mostrarItens(){document.getElementById("itens").innerHTML=carrinho.length?carrinho.map(i=>`<div class="item"><strong>${Number(i.quantidade||1)}x ${esc(i.nome)}</strong><br>${moeda(Number(i.preco||0)*Number(i.quantidade||1))}${arr(i.detalhes).length?"<br><small>"+i.detalhes.map(esc).join(" · ")+"</small>":""}</div>`).join(""):"<div class='note'>Seu carrinho está vazio.</div>"}
