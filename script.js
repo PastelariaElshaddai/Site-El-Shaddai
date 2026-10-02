@@ -1333,3 +1333,11 @@ function irParaSecao(id) {
     });
 
     }
+
+/* API pública do cardápio dinâmico */
+window.carrinho = carrinho;
+window.salvarCarrinho = salvarCarrinho;
+window.adicionarProduto = adicionarProduto;
+window.personalizarProduto = personalizarProduto;
+window.verCarrinho = verCarrinho;
+window.irParaPedido = irParaPedido;

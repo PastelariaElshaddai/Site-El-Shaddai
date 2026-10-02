@@ -1,273 +1,129 @@
-/* PASTELARIA EL SHADDAI — INTEGRAÇÃO FINAL DO CARDÁPIO */
+/* PASTELARIA EL SHADDAI — CARDÁPIO DINÂMICO */
+(function(){
+"use strict";
+const arr=v=>Array.isArray(v)?v:[];
+const esc=v=>String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+const moeda=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const categoriaId=nome=>"cat-"+String(nome||"categoria").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const ingredientesDo=p=>arr(p.ingredientes).map(x=>typeof x==="string"?x:x?.nome||"").filter(Boolean);
+const adicionaisDo=p=>arr(p.adicionais).map(x=>({nome:x?.nome||"",preco:Number(x?.preco||0)})).filter(x=>x.nome);
+let produtos=[],categorias=[],config=null;
 
-(function () {
-  "use strict";
+function aplicarConfiguracao(c){
+  config=c||null;
+  const nome=c?.nome_loja||"Pastelaria El Shaddai",slogan=c?.slogan||"Feito a dois, no ponto pra você!";
+  document.title=nome;
+  const h=document.getElementById("nomeLojaCliente"),p=document.getElementById("sloganLojaCliente"),logo=document.getElementById("logoCliente");
+  if(h)h.textContent=nome;if(p)p.textContent=slogan;if(logo&&c?.logo){logo.src=c.logo;logo.alt=nome}
+  const status=document.getElementById("statusLojaCliente"),aberta=c?.loja_aberta!==false;
+  if(status){status.textContent=aberta?"Loja aberta":"Loja fechada";status.classList.toggle("open",aberta);status.classList.toggle("closed",!aberta)}
+  const wa=document.getElementById("whatsappCliente"),ig=document.getElementById("instagramCliente");
+  if(wa&&c?.whatsapp){const n=String(c.whatsapp).replace(/\D/g,"");wa.href="https://wa.me/"+n;wa.style.display="grid"}else if(wa)wa.style.display="none";
+  if(ig&&c?.instagram&&c.instagram_ativo!==false){ig.href=c.instagram;ig.target="_blank";ig.rel="noopener";ig.style.display="grid"}else if(ig)ig.style.display="none";
+  window.elShaddaiConfig=c;
+}
 
-  function esc(v) {
-    return String(v ?? "").replace(/[&<>'"]/g, function (c) {
-      return {"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c];
-    });
-  }
-
-  function moeda(v) {
-    return Number(v || 0).toLocaleString("pt-BR", {
-      style: "currency", currency: "BRL"
-    });
-  }
-
-  function arr(v) {
-    if (Array.isArray(v)) return v;
-    if (typeof v === "string") {
-      try { var parsed = JSON.parse(v); return Array.isArray(parsed) ? parsed : []; } catch (e) { return []; }
-    }
-    return [];
-  }
-
-  function categoriaId(nome) {
-    return "cat-" + String(nome || "categoria")
-      .toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  }
-
-  function ingredientesDo(produto) {
-    return arr(produto.ingredientes).map(function (x) {
-      return typeof x === "string" ? x : (x && x.nome) || "";
-    }).filter(Boolean);
-  }
-
-  function adicionaisDo(produto) {
-    return arr(produto.adicionais).map(function (x) {
-      return {nome:(x && x.nome) || "", preco:Number(x && x.preco || 0)};
-    }).filter(function (x) { return x.nome; });
-  }
-
-  function aplicarConfiguracao(c) {
-    if (!c) return;
-
-    var nome = c.nome_loja || "Pastelaria El Shaddai";
-    var slogan = c.slogan || "Feito a dois, no ponto pra você!";
-
-    var h1 = document.querySelector("header h1");
-    var p = document.querySelector("header p");
-    var logo = document.querySelector(".logo-area img");
-
-    if (h1) h1.textContent = nome;
-    if (p) p.textContent = slogan;
-    if (logo && c.logo) {
-      logo.src = c.logo;
-      logo.alt = nome;
-    }
-
-    document.title = nome;
-
-    var banner = document.querySelector(".banner-principal");
-    if (banner && c.banner) {
-      banner.style.backgroundImage =
-        "linear-gradient(rgba(198,40,40,.78),rgba(255,179,0,.72)),url('" +
-        String(c.banner).replace(/'/g, "%27") + "')";
-      banner.style.backgroundSize = "cover";
-      banner.style.backgroundPosition = "center";
-    }
-
-    var status = document.getElementById("statusLojaCliente");
-    if (!status) {
-      status = document.createElement("div");
-      status.id = "statusLojaCliente";
-      status.style.cssText =
-        "display:none;margin:10px 0;padding:12px;border-radius:12px;text-align:center;font-weight:bold;";
-      var container = document.querySelector(".container");
-      if (container) container.prepend(status);
-    }
-
-    if (status) {
-      if (c.loja_aberta === false) {
-        status.textContent = "A loja está fechada no momento.";
-        status.style.display = "block";
-        status.style.background = "#ffe5e5";
-        status.style.color = "#a11";
-      } else {
-        status.style.display = "none";
-      }
-    }
-  }
-
-  function renderCategorias(categorias, produtos) {
-    var box = document.getElementById("categorias");
-    if (!box) return;
-
-    var nomes = categorias
-      .filter(function(c){return c && c.ativo !== false;})
-      .map(function(c){return c.nome;})
-      .filter(Boolean);
-
-    produtos.forEach(function(p){
-      if (p && p.categoria && nomes.indexOf(p.categoria) === -1)
-        nomes.push(p.categoria);
-    });
-
-    box.innerHTML = "";
-
-    nomes.forEach(function(nome){
-      var b = document.createElement("button");
-      b.className = "botao";
-      b.type = "button";
-      b.textContent = nome;
-      b.onclick = function(){ window.irParaSecao(categoriaId(nome)); };
-      box.appendChild(b);
-    });
-  }
-
-  function renderProdutos(categorias, produtos) {
-    var container = document.querySelector(".container");
-    if (!container) return;
-
-    container.querySelectorAll(".secao").forEach(function(s){s.remove();});
-
-    var nomes = [];
-    categorias.forEach(function(c){
-      if (c && c.nome && c.ativo !== false) nomes.push(c.nome);
-    });
-    produtos.forEach(function(p){
-      if (p && p.categoria && nomes.indexOf(p.categoria) === -1)
-        nomes.push(p.categoria);
-    });
-
-    nomes.forEach(function(nomeCategoria){
-      var secao = document.createElement("section");
-      secao.id = categoriaId(nomeCategoria);
-      secao.className = "secao";
-
-      var h2 = document.createElement("h2");
-      h2.textContent = nomeCategoria;
-      secao.appendChild(h2);
-
-      var grid = document.createElement("div");
-      grid.className = "produtos";
-
-      produtos.filter(function(p){
-        return p && p.categoria === nomeCategoria && p.ativo !== false;
-      }).forEach(function(produto){
-        var card = document.createElement("div");
-        card.className = "card-produto";
-
-        var foto = produto.foto
-          ? '<img src="' + esc(produto.foto) + '" alt="' + esc(produto.nome) +
-            '" style="width:100%;height:180px;object-fit:cover;border-radius:12px;margin-bottom:10px;">'
-          : "";
-
-        card.innerHTML =
-          foto +
-          "<h3>" + esc(produto.nome) + "</h3>" +
-          "<p>" + esc(produto.descricao || "") + "</p>" +
-          (arr(produto.tamanhos).length ? '<p class="preco">Escolha o tamanho</p>' : (Number(produto.preco || 0) > 0 ? '<p class="preco">' + moeda(produto.preco) + '</p>' : '')) +
-          '<button class="botao" type="button">' +
-          (produto.disponivel === false ? "Indisponível" : "Personalizar") +
-          "</button>";
-
-        var btn = card.querySelector("button");
-
-        if (produto.disponivel === false) {
-          btn.disabled = true;
-          btn.style.opacity = ".55";
-          btn.style.cursor = "not-allowed";
-        } else {
-          btn.onclick = function(){
-            var ingredientes = ingredientesDo(produto);
-            var adicionais = adicionaisDo(produto);
-            var tamanhos = arr(produto.tamanhos).map(function(t){return {nome:String(t.nome||""),preco:Number(t.preco||0)}}).filter(function(t){return t.nome;});
-
-            if (tamanhos.length) {
-              if (typeof window.escolherTamanhoProduto === "function") {
-                window.escolherTamanhoProduto(produto.nome,tamanhos,ingredientes,adicionais);
-              } else {
-                console.error("Função escolherTamanhoProduto não encontrada.");
-              }
-            } else if (typeof window.personalizarProduto === "function") {
-              window.personalizarProduto(
-                produto.nome,
-                Number(produto.preco || 0),
-                ingredientes,
-                adicionais
-              );
-            } else if (typeof window.adicionarProduto === "function") {
-              window.adicionarProduto(produto.nome, Number(produto.preco || 0));
-            }
-          };
-        }
-
-        grid.appendChild(card);
-      });
-
-      secao.appendChild(grid);
-
-      var acoes = container.querySelector(".acoes");
-      if (acoes) acoes.after(secao);
-      else container.appendChild(secao);
-    });
-  }
-
-  async function sincronizar() {
-    if (typeof supabaseClient === "undefined") {
-      console.error("supabaseClient não encontrado.");
-      return;
-    }
-
-    try {
-      var r = await Promise.all([
-        supabaseClient.from("configuracoes_loja").select("*").order("id",{ascending:true}).limit(1),
-        supabaseClient.from("categorias").select("*").eq("ativo",true).order("id",{ascending:true}),
-        supabaseClient.from("produtos").select("*").eq("ativo",true).order("id",{ascending:true})
-      ]);
-
-      if (r[0].error) throw r[0].error;
-      if (r[1].error) throw r[1].error;
-      if (r[2].error) throw r[2].error;
-
-      var config = (r[0].data || [])[0] || null;
-      var categorias = r[1].data || [];
-      var produtos = r[2].data || [];
-
-      aplicarConfiguracao(config);
-      renderCategorias(categorias, produtos);
-      renderProdutos(categorias, produtos);
-
-      document.documentElement.dataset.cardapioSupabase = "ok";
-      console.log("Cardápio sincronizado:", {config:!!config,categorias:categorias.length,produtos:produtos.length});
-    } catch (e) {
-      console.error("Erro na sincronização do cardápio:", e);
-    }
-  }
-
-  window.renderCategorias = renderCategorias;
-  window.renderProdutos = renderProdutos;
-  window.sincronizarCardapio = sincronizar;
-
-  document.addEventListener("DOMContentLoaded", function(){
-    setTimeout(sincronizar, 0);
+function renderCategorias(){
+  const box=document.getElementById("categorias");if(!box)return;
+  box.innerHTML="";
+  categorias.filter(c=>c?.ativo!==false).forEach(c=>{
+    const b=document.createElement("button");b.className="botao";b.type="button";b.textContent=c.nome;b.onclick=()=>irParaSecao(categoriaId(c.nome));box.appendChild(b);
   });
+}
 
-  window.sincronizarCardapioSupabase = sincronizar;
+function renderProdutos(){
+  const root=document.getElementById("catalogoDinamico");if(!root)return;
+  root.innerHTML="";
+  const cats=categorias.filter(c=>c?.ativo!==false).map(c=>c.nome).filter(Boolean);
+  produtos.forEach(p=>{if(p?.categoria&&!cats.includes(p.categoria))cats.push(p.categoria)});
+  if(!cats.length){root.innerHTML='<div class="empty-client">Nenhum produto disponível no momento.</div>';return}
+  cats.forEach(nomeCategoria=>{
+    const ps=produtos.filter(p=>p?.categoria===nomeCategoria&&p.ativo!==false);
+    if(!ps.length)return;
+    const sec=document.createElement("section");sec.id=categoriaId(nomeCategoria);sec.className="secao";
+    sec.innerHTML="<h2>"+esc(nomeCategoria)+"</h2>";
+    const grid=document.createElement("div");grid.className="produtos";
+    ps.forEach(produto=>{
+      const card=document.createElement("article");card.className="card-produto";
+      const tamanhos=arr(produto.tamanhos).map(t=>({nome:String(t?.nome||""),preco:Number(t?.preco||0)})).filter(t=>t.nome);
+      const preco=Number(produto.preco||0);
+      const custom=ingredientesDo(produto).length||adicionaisDo(produto).length||tamanhos.length;
+      const foto=produto.foto?`<img src="${esc(produto.foto)}" alt="${esc(produto.nome)}">`:"";
+      const precoHtml=tamanhos.length?'<p class="preco">Escolha o tamanho</p>':(preco>0?`<p class="preco">${moeda(preco)}</p>`:"");
+      card.innerHTML=foto+`<h3>${esc(produto.nome)}</h3><p>${esc(produto.descricao||"")}</p>${precoHtml}<button class="botao" type="button">${produto.disponivel===false?"Indisponível":(custom?"Personalizar":"Adicionar")}</button>`;
+      const btn=card.querySelector("button");
+      if(produto.disponivel===false){btn.disabled=true}
+      else if(config?.loja_aberta===false){btn.disabled=true;btn.title="A loja está fechada no momento"}
+      else btn.onclick=()=>{
+        if(tamanhos.length&&typeof window.escolherTamanhoProduto==="function")return window.escolherTamanhoProduto(produto.nome,tamanhos,ingredientesDo(produto),adicionaisDo(produto));
+        if(custom&&typeof window.personalizarProduto==="function")return window.personalizarProduto(produto.nome,preco,ingredientesDo(produto),adicionaisDo(produto));
+        if(typeof window.adicionarProduto==="function")window.adicionarProduto(produto.nome,preco);
+      };
+      grid.appendChild(card);
+    });
+    sec.appendChild(grid);root.appendChild(sec);
+  });
+  atualizarPesquisa("");
+}
+function aplicarPesquisa(termo){
+  termo=String(termo||"").trim().toLowerCase();
+  document.querySelectorAll(".secao").forEach(sec=>{
+    let encontrou=false;
+    sec.querySelectorAll(".card-produto").forEach(card=>{
+      const ok=!termo||card.textContent.toLowerCase().includes(termo);
+      card.style.display=ok?"":"none";if(ok)encontrou=true;
+    });
+    sec.style.display=encontrou?"":"none";
+  });
+}
+function atualizarPesquisa(v){aplicarPesquisa(v)}
+window.executarPesquisa=()=>{const p=document.getElementById("pesquisa");aplicarPesquisa(p?.value||"");const alvo=document.querySelector(".secao:not([style*='display: none'])");if(alvo&&p?.value.trim())alvo.scrollIntoView({behavior:"smooth",block:"start"})};
+window.irParaSecao=id=>{const sec=document.getElementById(id);const p=document.getElementById("pesquisa");if(p)p.value="";aplicarPesquisa("");if(sec)sec.scrollIntoView({behavior:"smooth",block:"start"})};
+
+async function sincronizar(){
+  if(!window.supabaseClient)return;
+  try{
+    const [rc,rp,rs]=await Promise.all([
+      window.supabaseClient.from("configuracoes_loja").select("*").order("id",{ascending:true}).limit(1),
+      window.supabaseClient.from("categorias").select("*").eq("ativo",true).order("id",{ascending:true}),
+      window.supabaseClient.from("produtos").select("*").eq("ativo",true).order("id",{ascending:true})
+    ]);
+    if(rc.error)throw rc.error;if(rp.error)throw rp.error;if(rs.error)throw rs.error;
+    config=(rc.data||[])[0]||null;categorias=rp.data||[];produtos=rs.data||[];
+    aplicarConfiguracao(config);renderCategorias();renderProdutos();
+    document.documentElement.dataset.cardapioSupabase="ok";
+  }catch(e){console.error("Erro ao atualizar cardápio:",e)}
+}
+function registrarVisita(){
+  if(sessionStorage.getItem("elshaddai_visita_registrada"))return;
+  sessionStorage.setItem("elshaddai_visita_registrada","1");
+  const n=Number(localStorage.getItem("elshaddai_visitas_total")||0)+1;localStorage.setItem("elshaddai_visitas_total",String(n));
+}
+document.addEventListener("DOMContentLoaded",()=>{
+  registrarVisita();
+  const p=document.getElementById("pesquisa"),b=document.getElementById("btnPesquisa");
+  p?.addEventListener("input",e=>aplicarPesquisa(e.target.value));p?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();window.executarPesquisa()}});
+  b?.addEventListener("click",window.executarPesquisa);
+  sincronizar();
+  setInterval(sincronizar,20000);
+  window.addEventListener("focus",sincronizar);
+});
+window.sincronizarCardapioSupabase=sincronizar;
 })();
 
-
-function escolherTamanhoProduto(nome,tamanhos,ingredientes,adicionais){
-  var antigo=document.getElementById("tamanhoProdutoModal");if(antigo)antigo.remove();
-  var fundo=document.createElement("div");fundo.id="tamanhoProdutoModal";fundo.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px;";
-  var caixa=document.createElement("div");caixa.style.cssText="width:100%;max-width:500px;background:#fff8e7;border:3px solid #ffb300;border-radius:20px;padding:20px;max-height:90vh;overflow:auto;";
-  var html="<h2 style='text-align:center;color:#c62828;margin-top:0'>Escolha o tamanho</h2><p style='text-align:center;font-weight:bold'>"+esc(nome)+"</p>";
-  tamanhos.forEach(function(t,i){html+="<label style='display:flex;justify-content:space-between;align-items:center;background:white;border:2px solid #ddd;border-radius:12px;padding:14px;margin-bottom:9px;cursor:pointer'><span><strong>"+esc(t.nome)+"</strong> — <span style='color:#c62828;font-weight:bold'>"+moeda(t.preco)+"</span></span><input type='radio' name='tamanhoProduto' value='"+i+"' "+(i===0?"checked":"")+" style='width:22px;height:22px'></label>";});
-  html+="<button id='confirmarTamanhoProduto' style='width:100%;padding:15px;background:#ffb300;border:0;border-radius:12px;font-weight:bold;font-size:18px'>Adicionar ao carrinho</button><button id='fecharTamanhoProduto' style='width:100%;padding:13px;margin-top:9px;background:white;border:2px solid #c62828;border-radius:12px;color:#c62828;font-weight:bold'>Fechar</button>";
-  caixa.innerHTML=html;fundo.appendChild(caixa);document.body.appendChild(fundo);
-  caixa.querySelector("#confirmarTamanhoProduto").onclick=function(){
-    var r=caixa.querySelector("input[name='tamanhoProduto']:checked");if(!r)return alert("Escolha um tamanho.");
-    var t=tamanhos[Number(r.value)];
-    var detalhe="Tamanho: "+t.nome;
-    // O tamanho fica registrado no item e no nome para aparecer também no pedido/WhatsApp.
-    var itemNome=nome+" - "+t.nome;
-    var existente=carrinho.find(function(i){return i.nome===itemNome && Number(i.preco)===Number(t.preco);});
-    if(existente)existente.quantidade=Number(existente.quantidade||1)+1;else carrinho.push({nome:itemNome,preco:Number(t.preco),quantidade:1,detalhes:[detalhe]});
-    if(typeof salvarCarrinho==="function")salvarCarrinho();fundo.remove();alert("Produto adicionado ao carrinho!");
+/* Tamanho do produto */
+window.escolherTamanhoProduto=function(nome,tamanhos,ingredientes,adicionais){
+  const antigo=document.getElementById("tamanhoProdutoModal");if(antigo)antigo.remove();
+  const fundo=document.createElement("div");fundo.id="tamanhoProdutoModal";fundo.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px";
+  const caixa=document.createElement("div");caixa.style.cssText="width:100%;max-width:500px;background:#fff8e7;border:3px solid #ffb300;border-radius:18px;padding:18px;max-height:90vh;overflow:auto";
+  caixa.innerHTML=`<h2 style="text-align:center;color:#c62828;margin-top:0">Escolha o tamanho</h2><p style="text-align:center;font-weight:700">${esc(nome)}</p>${tamanhos.map((t,i)=>`<label style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #ddd;border-radius:12px;padding:13px;margin-bottom:8px;cursor:pointer"><span><strong>${esc(t.nome)}</strong> — <span style="color:#c62828;font-weight:700">${moeda(t.preco)}</span></span><input type="radio" name="tamanhoProduto" value="${i}" ${i===0?"checked":""} style="width:21px;height:21px"></label>`).join("")}<button id="confirmarTamanhoProduto" style="width:100%;padding:14px;background:#ffb300;border:0;border-radius:11px;font-weight:700">Adicionar ao carrinho</button><button id="fecharTamanhoProduto" style="width:100%;padding:12px;margin-top:8px;background:#fff;border:1px solid #c62828;border-radius:11px;color:#c62828;font-weight:700">Fechar</button>`;
+  fundo.appendChild(caixa);document.body.appendChild(fundo);
+  caixa.querySelector("#confirmarTamanhoProduto").onclick=()=>{
+    const r=caixa.querySelector("input[name='tamanhoProduto']:checked");if(!r)return;
+    const t=tamanhos[Number(r.value)],itemNome=nome+" - "+t.nome;
+    const existente=window.carrinho?.find(i=>i.nome===itemNome&&Number(i.preco)===Number(t.preco));
+    if(existente)existente.quantidade=Number(existente.quantidade||1)+1;else window.carrinho.push({nome:itemNome,preco:Number(t.preco),quantidade:1,detalhes:["Tamanho: "+t.nome]});
+    if(typeof window.salvarCarrinho==="function")window.salvarCarrinho();fundo.remove();
   };
-  caixa.querySelector("#fecharTamanhoProduto").onclick=function(){fundo.remove();};
-}
+  caixa.querySelector("#fecharTamanhoProduto").onclick=()=>fundo.remove();
+};
