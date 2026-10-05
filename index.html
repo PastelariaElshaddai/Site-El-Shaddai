@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pastelaria El Shaddai</title>
+<style>
+:root{--red:#c62828;--red2:#e53935;--gold:#ffb300;--cream:#fff8e7;--text:#242424;--muted:#707070;--card:#fff;--line:#eadfce;--green:#237b39}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--cream);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+button,input{font:inherit}
+header{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--red),var(--red2) 55%,var(--gold));color:#fff;text-align:center;padding:20px 16px 22px;box-shadow:0 5px 18px #0002}
+header:after{content:"";position:absolute;inset:auto -15% -75px -15%;height:130px;background:#fff1;border-radius:50%}
+.logo-area{position:relative;z-index:1;width:112px;height:112px;margin:0 auto 10px;background:#fff;border:4px solid #ffd166;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 18px #0003}
+.logo-area img{width:100%;height:100%;object-fit:contain;display:block}
+header h1{position:relative;z-index:1;margin:4px 0 5px;font-size:27px;line-height:1.15}header p{position:relative;z-index:1;margin:0;font-size:15px;font-weight:600}
+.header-actions{position:relative;z-index:2;display:flex;justify-content:center;gap:9px;margin-top:12px}.icon-link{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--red);text-decoration:none;box-shadow:0 3px 10px #0002}.icon-link svg{width:20px;height:20px}
+.container{width:min(1050px,92%);margin:18px auto 40px}
+.store-status{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 14px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;font-weight:700;color:var(--muted)}.store-status>span:first-child{flex:1;text-align:center}.store-socials{display:flex;gap:6px}.store-socials .icon-link{width:34px;height:34px;background:var(--gold);color:var(--red);box-shadow:none}.store-socials .icon-link svg{width:18px;height:18px}
+.store-status.open{color:var(--green);background:#eef9f1}.store-status.closed{color:#a00018;background:#fff0f0}
+.area-pesquisa{position:relative;margin-bottom:12px}.pesquisa{width:100%;height:52px;padding:10px 58px 10px 17px;border:1.5px solid #e5c85c;border-radius:14px;background:#fff;outline:none;box-shadow:0 3px 12px #0000000a}.pesquisa:focus{border-color:var(--gold);box-shadow:0 0 0 3px #ffb30020}
+.botao-pesquisa{position:absolute;right:5px;top:5px;width:42px;height:42px;border:0;border-radius:11px;background:var(--gold);color:var(--red);display:grid;place-items:center;cursor:pointer}.botao-pesquisa svg{width:21px;height:21px}
+.area-categorias{margin-bottom:16px}.categorias{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 5px}.categorias::-webkit-scrollbar{display:none}.categorias .botao{flex:0 0 auto}
+.botao{background:var(--gold);color:#222;border:0;border-radius:11px;padding:11px 16px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s}.botao:hover{opacity:.93}.botao:active{transform:scale(.98)}.botao:disabled{opacity:.5;cursor:not-allowed}
+.acoes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 22px}.acoes .botao{width:100%}
+.secao{scroll-margin-top:14px;margin:0 0 28px}.secao h2{margin:0 0 13px;color:var(--red);font-size:22px;border-bottom:3px solid var(--gold);padding-bottom:8px}
+.produtos{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.card-produto{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 4px 12px #0000000a;display:flex;flex-direction:column;min-height:190px}.card-produto img{width:100%;height:175px;object-fit:cover;border-radius:12px;margin-bottom:10px}.card-produto h3{color:var(--red);margin:0 0 7px;font-size:19px}.card-produto p{line-height:1.4;margin:5px 0;color:#555}.card-produto .preco{color:var(--red);font-size:18px;font-weight:800;margin:10px 0}.card-produto .botao{width:100%;margin-top:auto}.sem-preco{display:none}
+.info-loja{margin:0 0 12px;padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:12px;color:var(--muted);white-space:pre-line;line-height:1.45}.promocoes-cliente{margin:0 0 20px;background:linear-gradient(135deg,#fff,#fff8e7);border:2px solid var(--gold);border-radius:16px;padding:13px;box-shadow:0 5px 16px #0000000a}.promocoes-cliente h2{font-size:19px}.promocao-card{position:relative}.promocao-card:before{content:"OFERTA";position:absolute;right:10px;top:10px;font-size:10px;font-weight:800;color:#a00018;background:#ffe8e8;padding:4px 7px;border-radius:8px}.promocoes-cliente h2{margin:0 0 10px;color:var(--red)}.promocao-card{background:#fff;border:1px solid var(--gold);border-radius:14px;padding:12px;margin-bottom:8px}.promocao-card strong{color:var(--red)}.empty-client{text-align:center;background:#fff;border:1px dashed #ddd;border-radius:14px;padding:25px;color:var(--muted)}
+.notice-manual{margin:0 0 10px;padding:10px 12px;border-radius:11px;background:#fff8e7;border:1px solid var(--gold);color:#654d00;text-align:center;font-weight:700}.rodape-loja{margin-top:35px}.fidelidade-banner,.rodape-info{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 4px 12px #0000000a}.fidelidade-banner{border:2px solid var(--gold)}.fidelidade-banner strong{color:var(--red);font-size:20px}.fidelidade-consulta{display:flex;gap:8px;flex-wrap:wrap}.fidelidade-consulta input{flex:1;min-width:190px;padding:11px;border:1px solid #ddd;border-radius:10px}.rodape-info strong{color:var(--red)}.rodape-info p{margin:7px 0;color:var(--muted)}.rodape-links{display:flex;gap:8px}.rodape-links a{color:var(--red);font-weight:700;text-decoration:none}@media(max-width:600px){header{padding-top:17px}.logo-area{width:98px;height:98px}.container{width:92%}.produtos{grid-template-columns:1fr}.acoes{grid-template-columns:1fr}.card-produto{min-height:0}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-area"><img id="logoCliente" src="Logo.png" alt="Pastelaria El Shaddai"></div>
+  <h1 id="nomeLojaCliente">Pastelaria El Shaddai</h1>
+  <p id="sloganLojaCliente">Feito a dois, no ponto pra você!</p>
+</header>
+<div class="container">
+  <div id="modoManualAviso" class="notice-manual" style="display:none">Modo atendimento: você está fazendo o pedido pelo cliente.</div><div class="store-status"><span id="statusLojaCliente">Verificando loja...</span><span class="store-socials"><a id="whatsappCliente" class="icon-link" href="#" aria-label="WhatsApp" style="display:none"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.2 11.6a8.3 8.3 0 0 1-12.6 7.1L3.5 20l1.4-3.9A8.3 8.3 0 1 1 20.2 11.6Z" stroke="currentColor" stroke-width="1.8"/><path d="M8.6 7.8c.2-.4.4-.4.7-.4h.5c.2 0 .4.1.5.4l.7 1.6c.1.2.1.4-.1.6l-.6.7c.6 1.1 1.5 2 2.6 2.6l.7-.6c.2-.2.4-.2.6-.1l1.6.7c.3.1.4.3.4.5v.5c0 .3 0 .5-.4.7-.4.2-1 .3-1.6.1-2.1-.7-4.6-3.2-5.3-5.3-.2-.6-.1-1.2.1-1.6Z" fill="currentColor"/></svg></a><a id="instagramCliente" class="icon-link" href="#" aria-label="Instagram" style="display:none"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.8"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor"/></svg></a></span></div>
+  <div id="informacoesLojaCliente" class="info-loja" style="display:none"></div>
+  <div class="area-pesquisa">
+    <input id="pesquisa" class="pesquisa" type="search" placeholder="Pesquisar produto..." autocomplete="off">
+    <button type="button" id="btnPesquisa" class="botao-pesquisa" aria-label="Pesquisar">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="10.8" cy="10.8" r="6.4" stroke="currentColor" stroke-width="2"/><path d="M16 16l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="area-categorias"><div id="categorias" class="categorias"></div></div>
+  <div class="acoes">
+    <button class="botao" type="button" onclick="verCarrinho()">Carrinho (<span id="contador">0</span>)</button>
+    <button class="botao" type="button" onclick="irParaPedido()">Fazer pedido</button><button class="botao" type="button" onclick="zerarPedidoCliente()" style="grid-column:1/-1;background:#fff;border:1px solid #c62828;color:#c62828">Zerar pedido</button>
+  </div>
+  <section id="promocoesCliente" class="promocoes-cliente" style="display:none"></section><div id="catalogoDinamico"></div><footer class="rodape-loja"><section id="fidelidadeCliente" class="fidelidade-banner" style="display:none"><div><strong>Fidelidade dos clientes</strong><p>Consulte suas compras e veja seu benefício.</p></div><div class="fidelidade-consulta"><input id="fidelidadeTelefoneCliente" type="tel" placeholder="Seu telefone"><button id="btnFidelidadeCliente" class="botao" type="button">Consultar fidelidade</button></div><div id="fidelidadeResultadoCliente"></div></section><div class="rodape-info"><strong>Nossa localização e contatos</strong><p id="rodapeInfoTexto">Consulte nossas informações de atendimento.</p><p>Estamos no iFood e no 99Food.</p><div class="rodape-links"><span id="rodapeWhatsapp"></span><span id="rodapeInstagram"></span></div></div></footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js?v=20261005-final2"></script>
+<script src="script.js?v=20261005-final2"></script>
+<script src="catalogo.js?v=20261005-final2"></script>
+</body>
+</html>
