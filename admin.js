@@ -53,7 +53,6 @@ async function iniciar(){
   $("manualProduto")?.addEventListener("change",()=>{const p=produtos.find(x=>String(x.id)===String($("manualProduto").value));if(p)$("manualPreco").value=Number(p.preco||0)});
   $("manualFrete")?.addEventListener("input",renderPedidoManualItens);$("manualDesconto")?.addEventListener("input",renderPedidoManualItens);
   await carregarTudoCompleto();
-  if(!window.__elshaddaiAutoTimer) window.__elshaddaiAutoTimer=setInterval(atualizarAdmAutomaticamente,8000);
 }
 function lerImagem(input,cb){const f=input.files?.[0];if(!f)return;if(f.size>1800000){alert("A imagem deve ter no máximo 1,8 MB.");input.value="";return}const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(f)}
 function mostrarImagem(id,src){const i=$(id);if(i&&src){i.src=src;i.style.display="block"}}
@@ -77,11 +76,13 @@ async function carregarTudoCompleto(){
   try{
     if(!window.supabaseClient)throw new Error("Cliente Supabase não carregado.");
     const db=window.supabaseClient;
-    const [cats,prods,conf]=await Promise.all([
+    const consultas=Promise.all([
       db.from("categorias").select("*").order("id"),
       db.from("produtos").select("*").order("id",{ascending:false}),
       db.from("configuracoes_loja").select("*").order("id",{ascending:true}).limit(1)
     ]);
+    const limite=new Promise((_,reject)=>setTimeout(()=>reject(new Error("Tempo limite ao consultar o Supabase. Verifique a conexão/rede e tente novamente.")),15000));
+    const [cats,prods,conf]=await Promise.race([consultas,limite]);
     if(cats.error)throw cats.error;if(prods.error)throw prods.error;if(conf.error)throw conf.error;
     categorias=cats.data||[];produtos=prods.data||[];configLoja=(conf.data||[])[0]||null;
     montarAdicionais();popularCategorias();renderProdutos();renderCategorias();renderComboProdutos($("produtoId")?.value||"");aplicarConfigNosCampos();
@@ -366,5 +367,6 @@ async function zerarTodosPedidos(){if(!await executarLimpezaTabela("pedidos"))re
 async function zerarComprovantes(){if(!await executarLimpezaTabela("comprovantes"))return;await Promise.all([carregarPedidos(true),carregarDashboard(true)]);carregarComprovantes()}
 async function zerarClientesSalvos(){if(!await executarLimpezaTabela("clientes"))return;clientes=[];await carregarClientes(true);await carregarDashboard(true)}
 
-document.addEventListener("visibilitychange",()=>{if(!document.hidden && window.__elshaddaiADMLogado) atualizarAdmAutomaticamente()});
-window.iniciarADM=iniciar;
+document.addEventListener("DOMContentLoaded",iniciar);
+setInterval(atualizarAdmAutomaticamente,8000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)atualizarAdmAutomaticamente()});

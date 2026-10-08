@@ -47,12 +47,9 @@
 
 
 .media-actions{display:flex;gap:8px;margin-top:7px}.km-tabela{display:grid;gap:7px;margin:8px 0}.km-faixa{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;background:#fffaf0;border:1px solid #eadfce;border-radius:10px;padding:8px}.status-word{display:inline-block;font-weight:800;padding:5px 9px;border-radius:8px;font-size:12px}.status-word.novo{background:#ffe2df;color:#a00018}.status-word.em_preparo{background:#fff0c8;color:#8a5a00}.status-word.saiu_entrega{background:#dcecff;color:#175a9c}.status-word.concluido{background:#dff6e8;color:#126b3a}.status-word.cancelado{background:#eee;color:#777}.status-word.pronto{background:#e7e0ff;color:#5b3aa4}.novo-pedido-alerta{border:3px solid #ffb300;box-shadow:0 20px 70px #0007}.novo-pedido-alerta h2{margin-bottom:3px}.recent-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.recent-actions button{font-size:12px;padding:7px 9px}
-
-.login-gate{position:fixed;inset:0;background:var(--bg);z-index:100000;display:flex;align-items:center;justify-content:center;padding:18px}.login-card{width:min(420px,100%);background:#fff;border:1px solid #eadcae;border-radius:20px;padding:24px;box-shadow:0 15px 50px #0002}.login-card h1{margin:0 0 6px;color:var(--red)}.login-card p{color:var(--muted);margin:6px 0 18px}.login-card input{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:5px 0 12px}.login-card button{width:100%;margin-top:4px}.login-error{display:none;margin:10px 0;padding:10px;border-radius:10px;background:#ffe8e8;color:#a00018;font-size:13px}.login-loading{font-size:13px;color:var(--muted);margin-top:10px;text-align:center}
 </style>
 </head>
 <body>
-<div id="loginGate" class="login-gate" style="display:none"><div class="login-card"><h1>El Shaddai</h1><p>Acesso administrativo</p><form id="loginForm"><label><strong>E-mail</strong></label><input id="loginEmail" type="email" autocomplete="username" required placeholder="Seu e-mail"><label><strong>Senha</strong></label><input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Sua senha"><div id="loginError" class="login-error"></div><button id="loginBtn" class="btn primary" type="submit">Entrar</button><div id="loginLoading" class="login-loading"></div></form></div></div>
 <div id="printReceipt" class="print-only"></div>
 <div class="layout">
 <aside class="side"><div class="brand"><b>El Shaddai</b><small>Administração</small></div><nav class="nav">
@@ -68,7 +65,7 @@
 <button data-screen="fidelidade"><span>Fidelidade dos Clientes</span></button>
 <button data-screen="whatsapp"><span>Integração WhatsApp</span></button>
 </nav></aside>
-<main class="main"><header class="top"><div><h1 id="tituloTela">Início</h1><p>Pastelaria El Shaddai</p></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><div class="status" id="status">Conectando...</div><div id="topLojaStatus" class="store-state">Verificando loja...</div><button id="btnSairADM" class="btn light" type="button" style="display:none">Sair</button></div></header>
+<main class="main"><header class="top"><div><h1 id="tituloTela">Início</h1><p>Pastelaria El Shaddai</p></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><div class="status" id="status">Conectando...</div><div id="topLojaStatus" class="store-state">Verificando loja...</div></div></header>
 
 <section id="inicio" class="screen active"><div class="toolbar"><div><h2>Visão geral</h2><p>Resumo da operação da loja.</p></div><button class="btn light" onclick="carregarTudoCompleto()">Atualizar</button></div><div class="store-control"><strong id="inicioLojaTitulo">Status da loja</strong><span id="inicioLojaStatus" class="store-state">Verificando...</span><button id="btnToggleLoja" class="btn store-open" onclick="alternarLoja()">Abrir loja</button><button class="btn light" onclick="abrirComoCliente()">Visualizar como cliente</button></div><div class="admin-shortcuts"><button class="btn light" onclick="abrirComoCliente()">Abrir cardápio do cliente</button><button class="btn primary" onclick="abrirPedidoManual()">Fazer pedido pelo cliente</button><button class="btn light" onclick="abrirTela('configuracao')">Abrir configuração da loja</button></div><div class="stats"><div class="stat"><strong id="inicioPedidos">0</strong><span>Pedidos hoje</span></div><div class="stat"><strong id="inicioFaturamento">R$ 0,00</strong><span>Faturamento hoje</span></div><div class="stat"><strong id="inicioFaturamentoMes">R$ 0,00</strong><span>Faturamento no mês</span></div><div class="stat"><strong id="inicioClientes">0</strong><span>Clientes</span></div><div class="stat"><strong id="inicioProdutosVendidos">0</strong><span>Produtos vendidos hoje</span></div></div><div class="card"><h3>Pedidos recentes</h3><div id="inicioPedidosLista" class="list"></div></div></section>
 
@@ -132,7 +129,7 @@
 <div id="comprovanteModal" class="modal-backdrop" style="display:none" onclick="if(event.target===this)fecharComprovanteModal()"><div class="modal-card"><div class="toolbar"><div><h2 id="comprovanteModalTitulo">Comprovante</h2><p>Informações completas do pedido selecionado</p></div><button class="btn light" type="button" onclick="fecharComprovanteModal()">Fechar</button></div><div id="comprovanteModalConteudo"></div></div></div>
 <div id="clienteModal" class="modal-backdrop" style="display:none" onclick="if(event.target===this)fecharClienteModal()"><div class="modal-card"><div class="toolbar"><div><h2 id="clienteModalNome">Cliente</h2><p>Histórico de compras e estornos</p></div><button class="btn light" type="button" onclick="fecharClienteModal()">Fechar</button></div><div id="clienteModalDados" class="detail-grid"></div><div class="card" style="margin-top:12px"><h3>Pedidos comprados</h3><div id="clienteModalHistorico" class="mini-list"></div></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase.js?v=20261007-final"></script>
+<script src="supabase.js?v=20261008-mesclado"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js"></script>
 <script>
@@ -202,32 +199,5 @@ window.addEventListener('pointerdown', function(){
   } catch(e) {}
 }, {once:true});
 </script>
-<script>
-(async function protegerADM(){
-  const gate=document.getElementById('loginGate'), form=document.getElementById('loginForm'), email=document.getElementById('loginEmail'), pass=document.getElementById('loginPassword'), err=document.getElementById('loginError'), btn=document.getElementById('loginBtn'), load=document.getElementById('loginLoading'), sair=document.getElementById('btnSairADM');
-  const mostrarErro=m=>{err.textContent=m||'Não foi possível entrar. Tente novamente.';err.style.display='block'};
-  const setBusy=(v,t='')=>{btn.disabled=v;btn.textContent=v?'Entrando...':'Entrar';load.textContent=t};
-  async function entrar(){
-    err.style.display='none'; setBusy(true);
-    try{
-      const {data,error}=await supabaseClient.auth.signInWithPassword({email:email.value.trim(),password:pass.value});
-      if(error) throw error;
-      if(!data?.session) throw new Error('Login sem sessão.');
-      gate.style.display='none'; sair.style.display='inline-block';
-      window.__elshaddaiADMLogado=true; if(typeof window.iniciarADM==='function') await window.iniciarADM();
-    }catch(e){console.error('Login ADM:',e);mostrarErro(e?.message==='Invalid login credentials'?'E-mail ou senha incorretos.':(e?.message||'Não foi possível entrar.'));}
-    finally{setBusy(false)}
-  }
-  form.addEventListener('submit',e=>{e.preventDefault();entrar()});
-  sair.addEventListener('click',async()=>{await supabaseClient.auth.signOut();location.reload()});
-  try{
-    if(!window.supabaseClient) throw new Error('Supabase não carregou.');
-    const {data,error}=await supabaseClient.auth.getSession();
-    if(error) throw error;
-    if(data?.session){sair.style.display='inline-block';gate.style.display='none';window.__elshaddaiADMLogado=true; if(typeof window.iniciarADM==='function') await window.iniciarADM();}
-    else {gate.style.display='flex';email.focus();}
-  }catch(e){console.error('Verificação de acesso:',e);gate.style.display='flex';mostrarErro('Não foi possível verificar o acesso. Recarregue a página e tente novamente.');}
-})();
-</script>
-<script src="admin.js?v=20261008-final"></script>
+<script src="admin.js?v=20261008-mesclado"></script>
 </body></html>

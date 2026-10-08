@@ -114,19 +114,29 @@ function renderPromocoesCliente(){
   box.innerHTML=`<h2>Promoções e cupons</h2>`+ativas.map(p=>{let m=null;try{m=JSON.parse(p.descricao||"")}catch{};let titulo=m?.__elshaddai_promo?(m.tipo==="percentual"?`${Number(m.valor||0)}% de desconto`:m.tipo==="valor"?`${moeda(m.valor)} de desconto`:"Produto específico"):((Number(p.desconto||0)>0)?`${Number(p.desconto)}% de desconto`:"Promoção");let desc=m?.descricao||(!m?.__elshaddai_promo?p.descricao||"":"");return `<div class="promocao-card"><strong>${esc(titulo)}</strong>${desc?`<div>${esc(desc)}</div>`:""}<div>Cupom: <strong>${esc(p.codigo||"")}</strong></div>${p.validade?`<small>Válido até ${esc(p.validade)}</small>`:""}</div>`}).join("");
 }
 async function sincronizar(){
-  if(!window.supabaseClient)return;
+  const status=document.getElementById("statusLojaCliente");
+  if(!window.supabaseClient){
+    if(status){status.textContent="Erro de conexão";status.classList.remove("open");status.classList.add("closed")}
+    return;
+  }
   try{
-    const [rc,rp,rs,rpromo]=await Promise.all([
+    const consultas=Promise.all([
       window.supabaseClient.from("configuracoes_loja").select("*").order("id",{ascending:true}).limit(1),
       window.supabaseClient.from("categorias").select("*").eq("ativo",true).order("id",{ascending:true}),
       window.supabaseClient.from("produtos").select("*").eq("ativo",true).order("id",{ascending:true}),
       window.supabaseClient.from("promocoes").select("*").order("id",{ascending:false})
     ]);
+    const limite=new Promise((_,reject)=>setTimeout(()=>reject(new Error("Tempo limite ao consultar o Supabase.")),15000));
+    const [rc,rp,rs,rpromo]=await Promise.race([consultas,limite]);
     if(rc.error)throw rc.error;if(rp.error)throw rp.error;if(rs.error)throw rs.error;if(rpromo.error)throw rpromo.error;
     config=(rc.data||[])[0]||null;categorias=rp.data||[];produtos=rs.data||[];promocoes=rpromo.data||[];
     aplicarConfiguracao(config);renderCategorias();renderProdutos();renderPromocoesCliente();
     document.documentElement.dataset.cardapioSupabase="ok";
-  }catch(e){console.error("Erro ao atualizar cardápio:",e)}
+  }catch(e){
+    console.error("Erro ao atualizar cardápio:",e);
+    document.documentElement.dataset.cardapioSupabase="erro";
+    if(status){status.textContent="Erro ao conectar";status.classList.remove("open");status.classList.add("closed")}
+  }
 }
 function metaConfigFidelidade(){const raw=String(config?.informacoes||"");const i=raw.lastIndexOf("ELSHADDAI_CONFIG_V3|");if(i<0)return null;try{const x=JSON.parse(raw.slice(i+"ELSHADDAI_CONFIG_V3|".length).trim());return x?.fidelidade?{...x.fidelidade,reset_fidelidade_em:x.reset_fidelidade_em||null,mensagem_fidelidade:x.mensagem_fidelidade||x.fidelidade.mensagem||"Olá {nome}, você atingiu sua meta de fidelidade: {beneficio}."}:null}catch{return null}}
 async function consultarFidelidadeCliente(){const box=document.getElementById("fidelidadeResultadoCliente"),tel=document.getElementById("fidelidadeTelefoneCliente")?.value.replace(/\D/g,"")||"",f=metaConfigFidelidade();if(!box)return;if(tel.length<10){box.innerHTML="<span>Informe um telefone válido.</span>";return}if(!f?.ativo){box.innerHTML="<span>A fidelidade dos clientes ainda não está configurada.</span>";return}try{const r=await window.supabaseClient.from("pedidos").select("cliente_nome,cliente_telefone,endereco,total,status,observacao,criado_em").eq("cliente_telefone",tel);if(r.error)throw r.error;const ps=(r.data||[]).filter(p=>{let meta={};try{meta=JSON.parse(p.observacao||"{}")}catch{}return (p.status||"novo")!=="cancelado"&&meta.modoTeste!==true&&(!f.reset_fidelidade_em||new Date(p.criado_em)>new Date(f.reset_fidelidade_em));});const c=ps[0];if(!c){box.innerHTML="<span>Nenhum cadastro encontrado para este telefone.</span>";return}const meta=Math.max(1,Number(f.meta||1)),compras=ps.length,faltam=compras>=meta?0:meta-(compras%meta),beneficios=Math.floor(compras/meta);const nomeCliente=c.cliente_nome||"Cliente",beneficio=f.beneficio||"Benefício",tpl=f.mensagem_fidelidade||f.mensagem||"Olá {nome}, você atingiu sua meta de fidelidade: {beneficio}.",msg=encodeURIComponent(tpl.replaceAll("{nome}",nomeCliente).replaceAll("{beneficio}",beneficio)),whats="https://wa.me/"+tel+"?text="+msg;box.innerHTML=`<strong>${esc(nomeCliente)}</strong><br>${compras} compra(s) registrada(s).<br>${beneficios?`Benefício disponível: ${esc(beneficio)}.<br><a class="botao" href="${whats}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px">WhatsApp — avisar que atingiu a meta</a>`:`Faltam ${faltam} compra(s) para: ${esc(beneficio)}.`}`;}catch(e){box.innerHTML="<span>Não foi possível consultar a fidelidade agora.</span>"}}
