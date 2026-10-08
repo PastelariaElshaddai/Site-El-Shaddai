@@ -29,27 +29,6 @@ messaging.onBackgroundMessage((payload) => {
   });
 });
 
-
-self.addEventListener('push', (event) => {
-  if (!event.data) return;
-  let payload = {};
-  try { payload = event.data.json(); } catch { try { payload = { data: event.data.text() }; } catch {} }
-  const data = payload.data || {};
-  const n = payload.notification || {};
-  const title = data.title || n.title || 'Novo pedido recebido';
-  const body = data.body || n.body || 'Chegou um novo pedido na loja.';
-  event.waitUntil(self.registration.showNotification(title, {
-    body,
-    icon: data.icon || '/Site-El-Shaddai/Logo.png',
-    badge: data.badge || '/Site-El-Shaddai/Logo.png',
-    requireInteraction: true,
-    renotify: true,
-    silent: false,
-    tag: data.orderId ? 'pedido-' + data.orderId : 'novo-pedido',
-    data: { url: data.url || '/Site-El-Shaddai/admin.html' }
-  }));
-});
-
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const target = event.notification.data?.url || '/Site-El-Shaddai/admin.html';
