@@ -106,39 +106,6 @@ function adicionarProduto(nome, preco) {
 // PERSONALIZAR PRODUTO
 // ======================================================
 
-function adicionarProdutoComTamanhos({produto,tamanhos=[],ingredientes=[],adicionais=[],detalhesBase=[],deferTamanho=false}={}){
- const opcoes=(tamanhos||[]).map(t=>({nome:String(t?.nome||""),preco:Number(t?.preco||0)})).filter(t=>t.nome);
- if(!opcoes.length)return;
- const abrir=()=>{
-   const antigo=document.getElementById("personalizacaoTamanhoModal");if(antigo)antigo.remove();
-   const fundo=document.createElement("div");fundo.id="personalizacaoTamanhoModal";fundo.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:999999;display:flex;align-items:center;justify-content:center;padding:12px";
-   const caixa=document.createElement("div");caixa.style.cssText="width:100%;max-width:540px;background:#fff8e7;border:3px solid #ffb300;border-radius:20px;padding:18px;max-height:92vh;overflow:auto;box-sizing:border-box";
-   const ings=(ingredientes||[]).map((a,i)=>`<label style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px;margin-bottom:8px"><span>${esc(a.nome||a)}</span><span><input type="checkbox" class="tamRetirar" data-index="${i}"> retirar</span></label>`).join("");
-   const ads=(adicionais||[]).map((a,i)=>`<label style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px;margin-bottom:8px"><span>${esc(a.nome)} + ${moeda(a.preco)}</span><input type="checkbox" class="tamAdd" data-index="${i}"></label>`).join("");
-   const tamanhoHtml=deferTamanho ? `<div class="help" style="background:#fff3cd;border:1px solid #ffb300;border-radius:12px;padding:11px;margin:10px 0">O tamanho será escolhido no carrinho.</div>` : (opcoes.length ? `<h3 style="color:#c62828">Tamanho</h3><p class="help">Escolha o tamanho agora. Você também poderá alterá-lo no carrinho.</p><div style="display:grid;gap:8px">${opcoes.map((t,i)=>`<label style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:2px solid ${i===0?'#ffb300':'#ddd'};border-radius:12px;padding:12px;cursor:pointer"><span><strong>${esc(t.nome)}</strong><br><small>${moeda(t.preco)}</small></span><input type="radio" name="tamEscolhido" value="${esc(t.nome)}" ${i===0?'checked':''} style="width:21px;height:21px"></label>`).join('')}</div>` : "");
-   caixa.innerHTML=`<h2 style="text-align:center;color:#c62828;margin:0 0 8px">Personalizar produto</h2><p style="text-align:center;font-weight:700">${esc(produto?.nome||"Produto")}</p>${tamanhoHtml}${ings?`<h3 style="color:#c62828">Ingredientes</h3>${ings}`:""}${ads?`<h3 style="color:#c62828">Adicionais</h3>${ads}`:""}<button id="confirmarTam" style="width:100%;padding:15px;background:#ffb300;border:0;border-radius:12px;font-weight:700;margin-top:12px">Adicionar ao carrinho</button><button id="fecharTam" style="width:100%;padding:12px;margin-top:8px;background:#fff;border:1px solid #c62828;border-radius:12px;color:#c62828">Fechar</button>`;
-   fundo.appendChild(caixa);document.body.appendChild(fundo);
-   caixa.querySelector("#confirmarTam").onclick=()=>{
-     const detalhes=Array.isArray(detalhesBase)?detalhesBase.slice():[];let extra=0;
-     const escolhido=caixa.querySelector('input[name="tamEscolhido"]:checked')?.value||"";
-     const tamanho=deferTamanho?null:(opcoes.find(t=>String(t.nome)===String(escolhido))||opcoes[0]);
-     if(!deferTamanho&&!tamanho){alert("Escolha um tamanho.");return}
-     if(tamanho)detalhes.push("Tamanho: "+tamanho.nome);
-     caixa.querySelectorAll(".tamRetirar:checked").forEach(c=>{const a=ingredientes[Number(c.dataset.index)];const n=a?.nome||a;if(n)detalhes.push("Sem "+n)});
-     caixa.querySelectorAll(".tamAdd:checked").forEach(c=>{const a=adicionais[Number(c.dataset.index)];if(a){extra+=Number(a.preco||0);detalhes.push("Com "+a.nome)}});
-     carrinho.push({nome:String(produto?.nome||""),preco:deferTamanho?extra:Number(tamanho.preco||0)+extra,precoAdicionais:extra,quantidade:1,detalhes,tamanhoOpcoes:opcoes,tamanhoEscolhido:deferTamanho?"":tamanho.nome});salvarCarrinho();fundo.remove();alert("Produto personalizado e adicionado ao carrinho.");
-   };
-   caixa.querySelector("#fecharTam").onclick=()=>fundo.remove();
- };
- abrir();
-}
-window.adicionarProdutoComTamanhos=adicionarProdutoComTamanhos;
-
-function selecionarTamanhoCarrinho(index,valor){
- const item=carrinho[index];if(!item?.tamanhoOpcoes)return;const t=item.tamanhoOpcoes.find(x=>String(x.nome)===String(valor));if(!t)return;item.tamanhoEscolhido=t.nome;item.detalhes=Array.isArray(item.detalhes)?item.detalhes.filter(x=>!String(x).startsWith("Tamanho:")):[];item.detalhes.unshift("Tamanho: "+t.nome);item.preco=Number(t.preco||0)+Number(item.precoAdicionais||0);salvarCarrinho();verCarrinho();
-}
-window.selecionarTamanhoCarrinho=selecionarTamanhoCarrinho;
-
 function personalizarProduto(
     nome,
     preco,
@@ -1048,11 +1015,6 @@ function verCarrinho() {
                     quantidade;
 
 
-                let tamanhoHTML = "";
-                if(Array.isArray(produto.tamanhoOpcoes) && produto.tamanhoOpcoes.length){
-                    const escolhido=produto.tamanhoEscolhido||"";
-                    tamanhoHTML=`<div style="margin-top:10px;background:#fff3cd;border:1px solid #ffb300;border-radius:10px;padding:10px"><strong>Escolha o tamanho:</strong><select onchange="selecionarTamanhoCarrinho(${index},this.value)" style="width:100%;margin-top:7px;padding:10px;border-radius:8px;border:1px solid #ddd"><option value="">Selecione o tamanho</option>${produto.tamanhoOpcoes.map(t=>`<option value="${String(t.nome).replace(/"/g,"&quot;")}" ${String(t.nome)===String(escolhido)?"selected":""}>${t.nome} — ${Number(t.preco||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</option>`).join("")}</select></div>`;
-                }
                 let detalhesHTML = "";
 
 
@@ -1094,7 +1056,6 @@ function verCarrinho() {
                             ${produto.nome}
                         </strong>
 
-                        ${tamanhoHTML}
                         ${detalhesHTML}
 
                         <p style="
@@ -1174,10 +1135,9 @@ function verCarrinho() {
         );
 
 
-        const faltamTamanho=carrinho.some(x=>Array.isArray(x.tamanhoOpcoes)&&x.tamanhoOpcoes.length&&!x.tamanhoEscolhido);
         caixa.innerHTML += `
 
-            <h2 style=
+            <h2 style="
                 text-align:center;
                 color:#c62828;
             ">
@@ -1190,8 +1150,7 @@ function verCarrinho() {
 
             <button
                 onclick="irParaPedido()"
-                ${faltamTamanho?'disabled':''}
-                style="${faltamTamanho?'opacity:.55;cursor:not-allowed;':''}
+                style="
                     width:100%;
                     padding:16px;
                     background:#ffb300;
@@ -1204,7 +1163,6 @@ function verCarrinho() {
                 Fazer pedido
             </button>
 
-        ${faltamTamanho?'<p style="text-align:center;color:#c62828;font-weight:700">Escolha o tamanho de todos os produtos antes de finalizar.</p>':""}
         `;
 
     }
