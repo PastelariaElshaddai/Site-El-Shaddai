@@ -116,7 +116,7 @@ function adicionarProdutoComTamanhos({produto,tamanhos=[],ingredientes=[],adicio
    const ings=(ingredientes||[]).map((a,i)=>`<label style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px;margin-bottom:8px"><span>${esc(a.nome||a)}</span><span><input type="checkbox" class="tamRetirar" data-index="${i}"> retirar</span></label>`).join("");
    const ads=(adicionais||[]).map((a,i)=>`<label style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px;margin-bottom:8px"><span>${esc(a.nome)} + ${moeda(a.preco)}</span><input type="checkbox" class="tamAdd" data-index="${i}"></label>`).join("");
    const tamanhoHtml=deferTamanho ? `<div class="help" style="background:#fff3cd;border:1px solid #ffb300;border-radius:12px;padding:11px;margin:10px 0">O tamanho será escolhido no carrinho.</div>` : (opcoes.length ? `<h3 style="color:#c62828">Tamanho</h3><p class="help">Escolha o tamanho agora. Você também poderá alterá-lo no carrinho.</p><div style="display:grid;gap:8px">${opcoes.map((t,i)=>`<label style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:2px solid ${i===0?'#ffb300':'#ddd'};border-radius:12px;padding:12px;cursor:pointer"><span><strong>${esc(t.nome)}</strong><br><small>${moeda(t.preco)}</small></span><input type="radio" name="tamEscolhido" value="${esc(t.nome)}" ${i===0?'checked':''} style="width:21px;height:21px"></label>`).join('')}</div>` : "");
-   caixa.innerHTML=`<h2 style="text-align:center;color:#c62828;margin:0 0 8px">Personalizar produto</h2><p style="text-align:center;font-weight:700">${esc(produto?.nome||"Produto")}</p>${tamanhoHtml}${ings?`<h3 style="color:#c62828">Ingredientes</h3>${ings}`:""}${ads?`<h3 style="color:#c62828">Adicionais</h3>${ads}`:""}<button id="confirmarTam" style="width:100%;padding:15px;background:#ffb300;border:0;border-radius:12px;font-weight:700;margin-top:12px">Adicionar ao carrinho</button><button id="fecharTam" style="width:100%;padding:12px;margin-top:8px;background:#fff;border:1px solid #c62828;border-radius:12px;color:#c62828">Fechar</button>`;
+   caixa.innerHTML=`<h2 style="text-align:center;color:#c62828;margin:0 0 8px">Personalize seu pedido</h2><p style="text-align:center;font-weight:700">${esc(produto?.nome||"Produto")}</p>${tamanhoHtml}${ings?`<h3 style="color:#c62828">Ingredientes</h3>${ings}`:""}${ads?`<h3 style="color:#c62828">Adicionais</h3>${ads}`:""}<button id="confirmarTam" style="width:100%;padding:15px;background:#ffb300;border:0;border-radius:12px;font-weight:700;margin-top:12px">Confirmar pedido</button><button id="fecharTam" style="width:100%;padding:12px;margin-top:8px;background:#fff;border:1px solid #c62828;border-radius:12px;color:#c62828">Fechar</button>`;
    fundo.appendChild(caixa);document.body.appendChild(fundo);
    caixa.querySelector("#confirmarTam").onclick=()=>{
      const detalhes=Array.isArray(detalhesBase)?detalhesBase.slice():[];let extra=0;
@@ -197,7 +197,7 @@ function personalizarProduto(
             text-align:center;
             margin-top:0;
         ">
-            Personalizar pedido
+            Personalize seu pedido
         </h2>
 
         <div style="
@@ -280,7 +280,7 @@ function personalizarProduto(
                 cursor:pointer;
             "
         >
-            Adicionar ao carrinho
+            Confirmar pedido
         </button>
 
         <button
@@ -846,7 +846,7 @@ function personalizarBebida(
                 font-weight:bold;
             "
         >
-            Adicionar ao carrinho
+            Confirmar pedido
         </button>
 
         <button
